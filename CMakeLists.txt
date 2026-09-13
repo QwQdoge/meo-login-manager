@@ -4,6 +4,19 @@ set(PROJECT_VERSION "6.7.5")
 
 project(PLASMALOGIN VERSION ${PROJECT_VERSION})
 
+# Meo keeps this fork intentionally narrow.  The contract test is source-only
+# and has no runtime dependency, so it can also run in a packaging checkout.
+include(CTest)
+if(BUILD_TESTING)
+    add_test(
+        NAME meo-fork-boundary
+        COMMAND ${CMAKE_COMMAND}
+            -DPROJECT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+            -DUPSTREAM_BASE=v${PROJECT_VERSION}
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/verify-meo-fork-boundary.cmake
+    )
+endif()
+
 # Options
 option(INSTALL_PAM_CONFIGURATION "Install PAM configuration files" ON)
 
