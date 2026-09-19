@@ -16,6 +16,7 @@ import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.private.keyboardindicator as KeyboardIndicator
 
 import org.kde.plasma.login as PlasmaLogin
+import MeoUI 1.0
 
 Item {
     id: root
@@ -38,10 +39,6 @@ Item {
         key: Qt.Key_CapsLock
     }
 
-    BreezeComponents.RejectPasswordAnimation {
-        id: rejectPasswordAnimation
-        target: mainStack
-    }
 
     Connections {
         target: greeterEventFilter
@@ -70,6 +67,7 @@ Item {
         hoverEnabled: true
 
         property bool uiVisible: PlasmaLogin.GreeterState.activeWindow === Window.window
+        property date currentDateTime: new Date()
 
         cursorShape: uiVisible ? Qt.ArrowCursor : Qt.BlankCursor
 
@@ -82,8 +80,8 @@ Item {
         Rectangle {
             anchors.fill: parent
             z: -2
-            color: Kirigami.Theme.backgroundColor
-            opacity: loginScreenRoot.uiVisible ? 0.18 : 0.08
+            color: MeoTheme.surface
+            opacity: loginScreenRoot.uiVisible ? 0.42 : 0.18
 
             Behavior on opacity {
                 OpacityAnimator { duration: 250 }
@@ -99,8 +97,8 @@ Item {
             radius: width / 2
             x: parent.width - width * 0.56
             y: -height * 0.62
-            color: Kirigami.Theme.highlightColor
-            opacity: 0.12
+            color: MeoTheme.primaryContainer
+            opacity: MeoTheme.isDarkMode ? 0.22 : 0.46
         }
 
         Rectangle {
@@ -110,8 +108,8 @@ Item {
             radius: width / 2
             x: -width * 0.62
             y: parent.height - height * 0.42
-            color: Kirigami.Theme.linkColor
-            opacity: 0.09
+            color: MeoTheme.tertiaryContainer
+            opacity: MeoTheme.isDarkMode ? 0.16 : 0.34
         }
 
         DropShadow {
@@ -133,17 +131,39 @@ Item {
             }
         }
 
-        MeoGreeterClock {
+        MeoAmbientClock {
             id: clock
-            shadow: clockShadow
             visible: y > 0 && Settings.showClock
-            // The large clock belongs to the quiet ambient state. When the
-            // user intentionally focuses the greeter, the authentication
-            // surface takes visual priority.
-            active: !loginScreenRoot.uiVisible
+            opacity: loginScreenRoot.uiVisible ? 0 : 1
+            scale: MeoTheme.reduceMotion ? 1 : (loginScreenRoot.uiVisible ? 0.985 : 1)
+            dateTime: loginScreenRoot.currentDateTime
+            timeColor: MeoTheme.contentOnSurface
+            dateColor: MeoTheme.contentOnSurfaceVariant
             anchors.horizontalCenter: parent.horizontalCenter
             y: (userListComponent.userList.y + mainStack.y)/2 - height/2
             Layout.alignment: Qt.AlignBaseline
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: MeoTheme.reduceMotion ? 0 : MeoTheme.motionDurationMedium1
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: MeoTheme.motionEasingEmphasizedAccelerate
+                }
+            }
+            Behavior on scale {
+                NumberAnimation {
+                    duration: MeoTheme.reduceMotion ? 0 : MeoTheme.motionDurationMedium1
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: MeoTheme.motionEasingEmphasizedAccelerate
+                }
+            }
+        }
+
+        Timer {
+            interval: 1000
+            repeat: true
+            running: root.visible
+            onTriggered: loginScreenRoot.currentDateTime = new Date()
         }
 
         // Focused authentication gets a calm tonal surface instead of adding
@@ -158,11 +178,11 @@ Item {
                             Kirigami.Units.gridUnit * 28)
             height: Math.min(parent.height - 5 * Kirigami.Units.gridUnit,
                              Kirigami.Units.gridUnit * 30)
-            radius: Kirigami.Units.gridUnit * 1.7
-            color: Kirigami.Theme.backgroundColor
-            border.width: softwareRendering ? 1 : 0
-            border.color: Kirigami.Theme.highlightColor
-            opacity: loginScreenRoot.uiVisible ? 0.90 : 0
+            radius: MeoTheme.shapeExtraLarge
+            color: MeoTheme.surfaceContainerLow
+            border.width: softwareRendering ? MeoTheme.strokeWidthThin : 0
+            border.color: MeoTheme.outlineVariant
+            opacity: loginScreenRoot.uiVisible ? 0.58 : 0
             scale: loginScreenRoot.uiVisible ? 1 : 0.975
             visible: opacity > 0.001
 
@@ -185,8 +205,8 @@ Item {
                 width: Math.min(parent.width * 0.34, Kirigami.Units.gridUnit * 8)
                 height: Kirigami.Units.smallSpacing
                 radius: height / 2
-                color: Kirigami.Theme.highlightColor
-                opacity: 0.75
+                color: MeoTheme.primary
+                opacity: 0.68
             }
         }
 
@@ -248,7 +268,7 @@ Item {
 
                 showUserList: !PlasmaLogin.GreeterState.beyondUserLimit
 
-                notificationMessage: {
+                statusMessage: {
                     const parts = [];
                     if (capsLockState.locked) {
                         parts.push(i18nd("plasma_login", "Caps Lock is on"));
@@ -261,7 +281,9 @@ Item {
 
                 //actionItemsVisible: !inputPanel.keyboardActive
                 actionItems: [
-                    BreezeComponents.ActionButton {
+                    MeoButton {
+                        type: "text"
+                        size: "s"
                         icon.name: "system-hibernate"
                         text: i18ndc("plasma_login", "Suspend to disk", "Hibernate")
                         visible: PlasmaLogin.SessionManagement.canHibernate
@@ -270,7 +292,9 @@ Item {
                             PlasmaLogin.SessionManagement.hibernate();
                         }
                     },
-                    BreezeComponents.ActionButton {
+                    MeoButton {
+                        type: "text"
+                        size: "s"
                         icon.name: "system-suspend"
                         text: i18ndc("plasma_login", "Suspend to RAM", "Sleep")
                         visible: PlasmaLogin.SessionManagement.canSuspend
@@ -279,7 +303,9 @@ Item {
                             PlasmaLogin.SessionManagement.suspend();
                         }
                     },
-                    BreezeComponents.ActionButton {
+                    MeoButton {
+                        type: "text"
+                        size: "s"
                         icon.name: "system-reboot"
                         text: i18nd("plasma_login", "Restart")
                         visible: PlasmaLogin.SessionManagement.canReboot
@@ -288,7 +314,9 @@ Item {
                             PlasmaLogin.SessionManagement.requestReboot(PlasmaLogin.SessionManagement.ConfirmationMode.Skip);
                         }
                     },
-                    BreezeComponents.ActionButton {
+                    MeoButton {
+                        type: "text"
+                        size: "s"
                         icon.name: "system-shutdown"
                         text: i18nd("plasma_login", "Shut Down")
                         visible: PlasmaLogin.SessionManagement.canShutdown
@@ -297,7 +325,9 @@ Item {
                             PlasmaLogin.SessionManagement.requestShutdown(PlasmaLogin.SessionManagement.ConfirmationMode.Skip);
                         }
                     },
-                    BreezeComponents.ActionButton {
+                    MeoButton {
+                        type: "text"
+                        size: "s"
                         icon.name: "system-user-prompt"
                         text: i18ndc("plasma_login", "For switching to a username and password prompt", "Other…")
                         onClicked: PlasmaLogin.GreeterState.loginState = PlasmaLogin.GreeterState.LoginState.UserPrompt
@@ -381,7 +411,7 @@ Item {
                 loginScreenUiVisible: loginScreenRoot.uiVisible
                 fontSize: Kirigami.Theme.defaultFont.pointSize + 2
 
-                notificationMessage: {
+                statusMessage: {
                     const parts = [];
                     if (capsLockState.locked) {
                         parts.push(i18nd("plasma_login", "Caps Lock is on"));
@@ -409,7 +439,9 @@ Item {
 
                 //actionItemsVisible: !inputPanel.keyboardActive
                 actionItems: [
-                    BreezeComponents.ActionButton {
+                    MeoButton {
+                        type: "text"
+                        size: "s"
                         icon.name: "system-hibernate"
                         text: i18ndc("plasma_login", "Suspend to disk", "Hibernate")
                         visible: PlasmaLogin.SessionManagement.canHibernate
@@ -418,7 +450,9 @@ Item {
                             PlasmaLogin.SessionManagement.hibernate();
                         }
                     },
-                    BreezeComponents.ActionButton {
+                    MeoButton {
+                        type: "text"
+                        size: "s"
                         icon.name: "system-suspend"
                         text: i18ndc("plasma_login", "Suspend to RAM", "Sleep")
                         visible: PlasmaLogin.SessionManagement.canSuspend
@@ -427,7 +461,9 @@ Item {
                             PlasmaLogin.SessionManagement.suspend();
                         }
                     },
-                    BreezeComponents.ActionButton {
+                    MeoButton {
+                        type: "text"
+                        size: "s"
                         icon.name: "system-reboot"
                         text: i18nd("plasma_login", "Restart")
                         visible: PlasmaLogin.SessionManagement.canReboot
@@ -436,7 +472,9 @@ Item {
                             PlasmaLogin.SessionManagement.requestReboot(PlasmaLogin.SessionManagement.ConfirmationMode.Skip);
                         }
                     },
-                    BreezeComponents.ActionButton {
+                    MeoButton {
+                        type: "text"
+                        size: "s"
                         icon.name: "system-shutdown"
                         text: i18nd("plasma_login", "Shut Down")
                         visible: PlasmaLogin.SessionManagement.canShutdown
@@ -445,7 +483,9 @@ Item {
                             PlasmaLogin.SessionManagement.requestShutdown(PlasmaLogin.SessionManagement.ConfirmationMode.Skip);
                         }
                     },
-                    BreezeComponents.ActionButton {
+                    MeoButton {
+                        type: "text"
+                        size: "s"
                         icon.name: "system-user-list"
                         text: i18nd("plasma_login", "List Users")
                         onClicked: PlasmaLogin.GreeterState.loginState = PlasmaLogin.GreeterState.LoginState.UserList
@@ -526,7 +566,7 @@ Item {
             mainStack.enabled = true;
             userListComponent.userList.opacity = 1;
 
-            rejectPasswordAnimation.start();
+
         }
 
         function onLoginSucceeded() {
