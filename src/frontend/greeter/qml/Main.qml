@@ -110,8 +110,8 @@ Item {
             radius: width / 2
             x: -width * 0.62
             y: parent.height - height * 0.42
-            color: Kirigami.Theme.negativeTextColor
-            opacity: 0.08
+            color: Kirigami.Theme.linkColor
+            opacity: 0.09
         }
 
         DropShadow {
@@ -137,14 +137,62 @@ Item {
             id: clock
             shadow: clockShadow
             visible: y > 0 && Settings.showClock
-            active: loginScreenRoot.uiVisible
+            // The large clock belongs to the quiet ambient state. When the
+            // user intentionally focuses the greeter, the authentication
+            // surface takes visual priority.
+            active: !loginScreenRoot.uiVisible
             anchors.horizontalCenter: parent.horizontalCenter
             y: (userListComponent.userList.y + mainStack.y)/2 - height/2
             Layout.alignment: Qt.AlignBaseline
         }
 
+        // Focused authentication gets a calm tonal surface instead of adding
+        // another authentication stack. User/session/password state still
+        // comes entirely from PlasmaLogin and the Breeze components below.
+        Rectangle {
+            id: authenticationBackdrop
+            z: 0
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+            width: Math.min(parent.width - 2 * Kirigami.Units.gridUnit,
+                            Kirigami.Units.gridUnit * 28)
+            height: Math.min(parent.height - 5 * Kirigami.Units.gridUnit,
+                             Kirigami.Units.gridUnit * 30)
+            radius: Kirigami.Units.gridUnit * 1.7
+            color: Kirigami.Theme.backgroundColor
+            border.width: softwareRendering ? 1 : 0
+            border.color: Kirigami.Theme.highlightColor
+            opacity: loginScreenRoot.uiVisible ? 0.90 : 0
+            scale: loginScreenRoot.uiVisible ? 1 : 0.975
+            visible: opacity > 0.001
+
+            Behavior on opacity {
+                OpacityAnimator {
+                    duration: Kirigami.Units.longDuration
+                    easing.type: Easing.OutCubic
+                }
+            }
+            Behavior on scale {
+                ScaleAnimator {
+                    duration: Kirigami.Units.longDuration
+                    easing.type: Easing.OutCubic
+                }
+            }
+
+            Rectangle {
+                anchors.top: parent.top
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: Math.min(parent.width * 0.34, Kirigami.Units.gridUnit * 8)
+                height: Kirigami.Units.smallSpacing
+                radius: height / 2
+                color: Kirigami.Theme.highlightColor
+                opacity: 0.75
+            }
+        }
+
         QQC2.StackView {
             id: mainStack
+            z: 1
             anchors.left: parent.left
             anchors.right: parent.right
 
@@ -235,13 +283,19 @@ Item {
                         icon.name: "system-reboot"
                         text: i18nd("plasma_login", "Restart")
                         visible: PlasmaLogin.SessionManagement.canReboot
-                        onClicked: PlasmaLogin.SessionManagement.requestReboot(PlasmaLogin.SessionManagement.ConfirmationMode.Skip)
+                        onClicked: {
+                            PlasmaLogin.GreeterState.clearPasswords();
+                            PlasmaLogin.SessionManagement.requestReboot(PlasmaLogin.SessionManagement.ConfirmationMode.Skip);
+                        }
                     },
                     BreezeComponents.ActionButton {
                         icon.name: "system-shutdown"
                         text: i18nd("plasma_login", "Shut Down")
                         visible: PlasmaLogin.SessionManagement.canShutdown
-                        onClicked: PlasmaLogin.SessionManagement.requestShutdown(PlasmaLogin.SessionManagement.ConfirmationMode.Skip)
+                        onClicked: {
+                            PlasmaLogin.GreeterState.clearPasswords();
+                            PlasmaLogin.SessionManagement.requestShutdown(PlasmaLogin.SessionManagement.ConfirmationMode.Skip);
+                        }
                     },
                     BreezeComponents.ActionButton {
                         icon.name: "system-user-prompt"
@@ -253,19 +307,22 @@ Item {
                 onLoginRequest: (username, password) => root.handleLoginRequest(username, password, sessionButton.currentSessionType, sessionButton.currentSessionFileName)
             }
 
-            readonly property real zoomFactor: 1.5
+            // A small depth change communicates navigation without the old
+            // 1.5x zoom, which made user/session switching feel like a scene
+            // transition rather than one continuous login surface.
+            readonly property real zoomFactor: 1.04
 
             popEnter: Transition {
                 ScaleAnimator {
                     from: mainStack.zoomFactor
                     to: 1
-                    duration: Kirigami.Units.veryLongDuration
+                    duration: Kirigami.Units.longDuration
                     easing.type: Easing.OutCubic
                 }
                 OpacityAnimator {
                     from: 0
                     to: 1
-                    duration: Kirigami.Units.veryLongDuration
+                    duration: Kirigami.Units.longDuration
                     easing.type: Easing.OutCubic
                 }
             }
@@ -274,13 +331,13 @@ Item {
                 ScaleAnimator {
                     from: 1
                     to: 1 / mainStack.zoomFactor
-                    duration: Kirigami.Units.veryLongDuration
+                    duration: Kirigami.Units.longDuration
                     easing.type: Easing.OutCubic
                 }
                 OpacityAnimator {
                     from: 1
                     to: 0
-                    duration: Kirigami.Units.veryLongDuration
+                    duration: Kirigami.Units.longDuration
                     easing.type: Easing.OutCubic
                 }
             }
@@ -289,13 +346,13 @@ Item {
                 ScaleAnimator {
                     from: 1 / mainStack.zoomFactor
                     to: 1
-                    duration: Kirigami.Units.veryLongDuration
+                    duration: Kirigami.Units.longDuration
                     easing.type: Easing.OutCubic
                 }
                 OpacityAnimator {
                     from: 0
                     to: 1
-                    duration: Kirigami.Units.veryLongDuration
+                    duration: Kirigami.Units.longDuration
                     easing.type: Easing.OutCubic
                 }
             }
@@ -304,13 +361,13 @@ Item {
                 ScaleAnimator {
                     from: 1
                     to: mainStack.zoomFactor
-                    duration: Kirigami.Units.veryLongDuration
+                    duration: Kirigami.Units.longDuration
                     easing.type: Easing.OutCubic
                 }
                 OpacityAnimator {
                     from: 1
                     to: 0
-                    duration: Kirigami.Units.veryLongDuration
+                    duration: Kirigami.Units.longDuration
                     easing.type: Easing.OutCubic
                 }
             }
@@ -374,13 +431,19 @@ Item {
                         icon.name: "system-reboot"
                         text: i18nd("plasma_login", "Restart")
                         visible: PlasmaLogin.SessionManagement.canReboot
-                        onClicked: PlasmaLogin.SessionManagement.requestReboot(PlasmaLogin.SessionManagement.ConfirmationMode.Skip)
+                        onClicked: {
+                            PlasmaLogin.GreeterState.clearPasswords();
+                            PlasmaLogin.SessionManagement.requestReboot(PlasmaLogin.SessionManagement.ConfirmationMode.Skip);
+                        }
                     },
                     BreezeComponents.ActionButton {
                         icon.name: "system-shutdown"
                         text: i18nd("plasma_login", "Shut Down")
                         visible: PlasmaLogin.SessionManagement.canShutdown
-                        onClicked: PlasmaLogin.SessionManagement.requestShutdown(PlasmaLogin.SessionManagement.ConfirmationMode.Skip)
+                        onClicked: {
+                            PlasmaLogin.GreeterState.clearPasswords();
+                            PlasmaLogin.SessionManagement.requestShutdown(PlasmaLogin.SessionManagement.ConfirmationMode.Skip);
+                        }
                     },
                     BreezeComponents.ActionButton {
                         icon.name: "system-user-list"
