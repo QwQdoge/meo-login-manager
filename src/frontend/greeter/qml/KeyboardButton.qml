@@ -9,8 +9,11 @@ import QtQuick
 
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.workspace.components as WorkspaceComponents
+import MeoUI 1.0
 
-PlasmaComponents.ToolButton {
+MeoButton {
+    type: "text"
+    size: "s"
     focusPolicy: Qt.TabFocus
     Accessible.description: i18ndc("plasma_login", "Button to change keyboard layout", "Switch layout")
     icon.name: "input-keyboard"
