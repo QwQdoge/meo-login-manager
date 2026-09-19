@@ -32,6 +32,7 @@ ecm_add_qml_module(plasma-login-greeter URI "org.kde.plasma.login" GENERATE_PLUG
 ecm_target_qml_sources(plasma-login-greeter
     SOURCES
     qml/Main.qml
+    qml/MeoGreeterClock.qml
     qml/Login.qml
     qml/SessionButton.qml
     qml/KeyboardButton.qml

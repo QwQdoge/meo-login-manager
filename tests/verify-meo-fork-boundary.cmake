@@ -27,6 +27,39 @@ foreach(required_text IN ITEMS
         message(FATAL_ERROR "fork policy no longer protects ${required_text}")
     endif()
 endforeach()
+
+set(greeter_main "${PROJECT_SOURCE_DIR}/src/frontend/greeter/qml/Main.qml")
+set(greeter_clock "${PROJECT_SOURCE_DIR}/src/frontend/greeter/qml/MeoGreeterClock.qml")
+foreach(source IN ITEMS "${greeter_main}" "${greeter_clock}")
+    if(NOT EXISTS "${source}")
+        message(FATAL_ERROR "required Meo greeter visual source is missing: ${source}")
+    endif()
+endforeach()
+file(READ "${greeter_main}" greeter_main_contents)
+file(READ "${greeter_clock}" greeter_clock_contents)
+foreach(required_text IN ITEMS
+        "MeoGreeterClock"
+        "GreeterState"
+        "SessionManagement"
+        "KeyboardButton"
+        "SessionButton"
+        "Kirigami.Theme")
+    string(FIND "${greeter_main_contents}${greeter_clock_contents}" "${required_text}" found_at)
+    if(found_at EQUAL -1)
+        message(FATAL_ERROR "greeter visual layer no longer preserves: ${required_text}")
+    endif()
+endforeach()
+foreach(forbidden_text IN ITEMS
+        "import Meo.System"
+        "MediaController"
+        "NotificationManager"
+        "KWallet"
+        "WeatherCache")
+    string(FIND "${greeter_main_contents}${greeter_clock_contents}" "${forbidden_text}" found_at)
+    if(NOT found_at EQUAL -1)
+        message(FATAL_ERROR "greeter visual layer may not read private session data: ${forbidden_text}")
+    endif()
+endforeach()
 foreach(required_text IN ITEMS
         "GreeterState"
         "does not expose a PasswordSync"
@@ -118,6 +151,8 @@ set(allowed_paths
     "cmake/MeoForkBoundary.cmake"
     "docs/"
     "packaging/"
+    "po/zh_CN/plasma_login.po"
+    "po/zh_TW/plasma_login.po"
     "src/frontend/greeter/"
     "src/frontend/kcm/"
     "tests/"

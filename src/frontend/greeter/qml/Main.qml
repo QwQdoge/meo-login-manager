@@ -76,6 +76,44 @@ Item {
         onPressed: PlasmaLogin.GreeterState.activateWindow(Window.window);
         onPositionChanged: PlasmaLogin.GreeterState.activateWindow(Window.window);
 
+        // This is intentionally a wallpaper-safe presentation overlay. The
+        // active KDE/Meo color scheme supplies the semantic roles; no private
+        // wallpaper path, user session service, or ad-hoc palette is read.
+        Rectangle {
+            anchors.fill: parent
+            z: -2
+            color: Kirigami.Theme.backgroundColor
+            opacity: loginScreenRoot.uiVisible ? 0.18 : 0.08
+
+            Behavior on opacity {
+                OpacityAnimator { duration: 250 }
+            }
+        }
+
+        // Static, low-contrast forms give the wallpaper a Caelestia-like
+        // spatial layer without turning the greeter into an animation engine.
+        Rectangle {
+            z: -1
+            width: Math.max(420, parent.width * 0.48)
+            height: width
+            radius: width / 2
+            x: parent.width - width * 0.56
+            y: -height * 0.62
+            color: Kirigami.Theme.highlightColor
+            opacity: 0.12
+        }
+
+        Rectangle {
+            z: -1
+            width: Math.max(360, parent.width * 0.38)
+            height: width
+            radius: width / 2
+            x: -width * 0.62
+            y: parent.height - height * 0.42
+            color: Kirigami.Theme.negativeTextColor
+            opacity: 0.08
+        }
+
         DropShadow {
             id: clockShadow
             anchors.fill: clock
@@ -95,10 +133,11 @@ Item {
             }
         }
 
-        BreezeComponents.Clock {
+        MeoGreeterClock {
             id: clock
-            property Item shadow: clockShadow
+            shadow: clockShadow
             visible: y > 0 && Settings.showClock
+            active: loginScreenRoot.uiVisible
             anchors.horizontalCenter: parent.horizontalCenter
             y: (userListComponent.userList.y + mainStack.y)/2 - height/2
             Layout.alignment: Qt.AlignBaseline

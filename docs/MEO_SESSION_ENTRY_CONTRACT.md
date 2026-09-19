@@ -75,15 +75,15 @@ new privileged window type.
 ## Configuration, privacy and fallback
 
 The formal version-one schema is owned by MeoKDE at
-`docs/schemas/meo-session-entry-v1.schema.json`.  It distinguishes a user
-`lockscreen` document from an authorized system `login` document.  The login
-document permits only system-managed wallpaper assets and city-level cached
-weather; it never reads a previous user's session data.
+`docs/schemas/meo-session-entry-v1.schema.json`. It distinguishes a user
+`lockscreen` document from an authorized system `login` document. The first
+Meo greeter uses only a system-managed wallpaper and theme roles; it reads no
+media, notifications, weather, KWallet, or previous-user session data.
 
-The safe defaults are: notifications show a count only; complete notification
-content, application names, album artwork and precise weather location are
-off; media and weather disappear when their provider is unavailable or times
-out.  External data is asynchronous and may not delay authentication.
+The rich lock-screen profile may show complete notification content, album
+artwork, city-level cached weather, current-session media, and output volume.
+Those sources are absent from the greeter. External data is asynchronous and
+may not delay authentication.
 
 If a Meo lock-screen theme cannot load, KScreenLocker must use the configured
 KDE fallback theme.  If the Meo greeter visual layer cannot load, the upstream
