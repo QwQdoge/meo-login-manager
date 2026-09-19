@@ -59,10 +59,6 @@ msgctxt "Button to change keyboard layout"
 msgid "Switch layout"
 msgstr "切換佈局"
 
-#: qml/MeoGreeterClock.qml:29
-#, kde-format
-msgid "Current time: %1, %2"
-msgstr "目前時間：%1、%2"
 
 #: qml/Login.qml:88
 #, kde-format
