@@ -584,6 +584,12 @@ Item {
     Timer {
         id: notificationResetTimer
         interval: 3000
-        onTriggered: notificationMessage = ""
+        onTriggered: {
+            notificationMessage = ""
+            if (mainStack.currentItem
+                    && mainStack.currentItem.authenticationFailed !== undefined) {
+                mainStack.currentItem.authenticationFailed = false
+            }
+        }
     }
 }
