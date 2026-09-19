@@ -16,6 +16,7 @@ import org.kde.plasma.extras 2.0 as PlasmaExtras
 import org.kde.kirigami 2.20 as Kirigami
 
 import org.kde.plasma.login as PlasmaLogin
+import MeoUI 1.0
 
 SessionManagementScreen {
     id: root
@@ -24,6 +25,13 @@ SessionManagementScreen {
     property bool showUsernamePrompt: !showUserList
 
     property bool loginScreenUiVisible: false
+    property string statusMessage: ""
+    property bool authenticationFailed: false
+    property bool submitting: false
+
+    // SessionManagementScreen's upstream status label stays empty; MeoUI
+    // presents the same message inside the authentication surface instead.
+    notificationMessage: ""
 
     //the y position that should be ensured visible when the on screen keyboard is visible
     property int visibleBoundary: mapFromItem(loginButton, 0, 0).y
@@ -38,6 +46,8 @@ SessionManagementScreen {
         // Escape key as well, for which it wouldn't make sense to trigger
         // login.
         passwordBox.clear();
+        authenticationFailed = false;
+        submitting = false;
         focusFirstVisibleFormControl();
     }
 
@@ -64,6 +74,8 @@ SessionManagementScreen {
         const username = showUsernamePrompt ? userNameInput.text : userList.selectedUser
         const password = passwordBox.text
 
+        authenticationFailed = false
+        submitting = true
         footer.enabled = false
         mainStack.enabled = false
         userListComponent.userList.opacity = 0.75
@@ -77,81 +89,103 @@ SessionManagementScreen {
         loginRequest(username, password);
     }
 
-    PlasmaComponents3.TextField {
-        id: userNameInput
-        font.pointSize: fontSize + 1
+    MeoAuthenticationSurface {
+        id: authenticationSurface
         Layout.fillWidth: true
+        Layout.minimumWidth: 320 * MeoTheme.globalScale
+        Layout.maximumWidth: 440 * MeoTheme.globalScale
+        active: root.loginScreenUiVisible
+        title: i18nd("plasma_login", "Log In")
+        supportingText: root.showUsernamePrompt
+                        ? i18nd("plasma_login", "Type in Username and Password")
+                        : ""
+        status: root.submitting ? "submitting"
+                               : root.authenticationFailed ? "failed"
+                                                           : "password"
+        statusText: root.authenticationFailed ? "" : root.statusMessage
+        errorText: root.authenticationFailed ? root.statusMessage : ""
 
-        text: ""
-        visible: showUsernamePrompt
-        focus: showUsernamePrompt
-        placeholderText: i18nd("plasma_login", "Username")
-
-        onAccepted: {
-            if (root.loginScreenUiVisible) {
-                passwordBox.forceActiveFocus()
-            }
-        }
-    }
-
-    RowLayout {
-        Layout.fillWidth: true
-
-        PlasmaExtras.PasswordField {
-            id: passwordBox
-            font.pointSize: fontSize + 1
+        MeoTextField {
+            id: userNameInput
             Layout.fillWidth: true
-
-            placeholderText: i18nd("plasma_login", "Password")
-            focus: !showUsernamePrompt
+            size: "m"
+            text: ""
+            visible: root.showUsernamePrompt
+            focus: root.showUsernamePrompt
+            label: i18nd("plasma_login", "Username")
+            placeholder: label
+            leadingIcon: "person"
 
             onAccepted: {
-                if (root.loginScreenUiVisible) {
-                    startLogin();
-                }
+                if (root.loginScreenUiVisible)
+                    passwordBox.forceActiveFocus()
+            }
+        }
+
+        MeoTextField {
+            id: passwordBox
+            Layout.fillWidth: true
+            size: "m"
+            label: i18nd("plasma_login", "Password")
+            placeholder: label
+            leadingIcon: "lock"
+            isPassword: true
+            focus: !root.showUsernamePrompt
+            enabled: !root.submitting
+
+            onAccepted: {
+                if (root.loginScreenUiVisible)
+                    startLogin()
             }
 
             visible: root.showUsernamePrompt || userList.currentItem.needsPassword
 
             Keys.onEscapePressed: {
-                mainStack.currentItem.forceActiveFocus();
+                mainStack.currentItem.forceActiveFocus()
             }
 
-            //if empty and left or right is pressed change selection in user switch
-            //this cannot be in keys.onLeftPressed as then it doesn't reach the password box
+            // If empty, left/right still switches the selected Plasma user.
             Keys.onPressed: event => {
                 if (event.key === Qt.Key_Left && !text) {
-                    userList.decrementCurrentIndex();
+                    userList.decrementCurrentIndex()
                     event.accepted = true
                 }
                 if (event.key === Qt.Key_Right && !text) {
-                    userList.incrementCurrentIndex();
+                    userList.incrementCurrentIndex()
                     event.accepted = true
-                }
-            }
-
-            Connections {
-                target: PlasmaLogin.Authenticator
-
-                function onLoginFailed() {
-                    passwordBox.selectAll()
-                    passwordBox.forceActiveFocus()
                 }
             }
         }
 
-        PlasmaComponents3.Button {
+        MeoButton {
             id: loginButton
-            Accessible.name: i18nd("plasma_login", "Log In")
-            Layout.preferredHeight: passwordBox.implicitHeight
-            Layout.preferredWidth: text.length === 0 ? loginButton.Layout.preferredHeight : -1
-
-            icon.name: text.length === 0 ? (root.LayoutMirroring.enabled ? "go-previous" : "go-next") : ""
-
-            text: root.showUsernamePrompt || userList.currentItem.needsPassword ? "" : i18n("Log In")
+            Layout.fillWidth: true
+            size: "m"
+            type: "filled"
+            text: i18nd("plasma_login", "Log In")
+            icon.name: "login"
+            loading: root.submitting
+            enabled: !root.submitting
+            Accessible.name: text
             onClicked: startLogin()
             Keys.onEnterPressed: clicked()
             Keys.onReturnPressed: clicked()
+        }
+    }
+
+    Connections {
+        target: PlasmaLogin.Authenticator
+
+        function onLoginFailed() {
+            root.submitting = false
+            root.authenticationFailed = true
+            authenticationSurface.triggerFailure()
+            passwordBox.selectAll()
+            passwordBox.forceActiveFocus()
+        }
+
+        function onLoginSucceeded() {
+            root.submitting = false
         }
     }
 
@@ -172,7 +206,7 @@ SessionManagementScreen {
                 focusFirstVisibleFormControl();
             }
 
-            passwordBox.showPassword = PlasmaLogin.GreeterState.showPassword;
+            passwordBox.passwordVisible = PlasmaLogin.GreeterState.showPassword;
         }
 
         // Login -> GreeterState
@@ -218,8 +252,8 @@ SessionManagementScreen {
             }
 
             function onShowPasswordChanged() {
-                if (PlasmaLogin.GreeterState.showPassword != passwordBox.showPassword) {
-                    PlasmaLogin.GreeterState.showPassword = passwordBox.showPassword;
+                if (PlasmaLogin.GreeterState.showPassword != passwordBox.passwordVisible) {
+                    PlasmaLogin.GreeterState.showPassword = passwordBox.passwordVisible;
                 }
             }
         }
@@ -269,8 +303,8 @@ SessionManagementScreen {
             }
 
             function onShowPasswordChanged() {
-                if (passwordBox.showPassword != PlasmaLogin.GreeterState.showPassword) {
-                    passwordBox.showPassword = PlasmaLogin.GreeterState.showPassword;
+                if (passwordBox.passwordVisible != PlasmaLogin.GreeterState.showPassword) {
+                    passwordBox.passwordVisible = PlasmaLogin.GreeterState.showPassword;
                 }
             }
         }
