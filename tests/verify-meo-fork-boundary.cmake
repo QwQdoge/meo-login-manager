@@ -29,22 +29,30 @@ foreach(required_text IN ITEMS
 endforeach()
 
 set(greeter_main "${PROJECT_SOURCE_DIR}/src/frontend/greeter/qml/Main.qml")
-set(greeter_clock "${PROJECT_SOURCE_DIR}/src/frontend/greeter/qml/MeoGreeterClock.qml")
-foreach(source IN ITEMS "${greeter_main}" "${greeter_clock}")
+set(greeter_login "${PROJECT_SOURCE_DIR}/src/frontend/greeter/qml/Login.qml")
+set(greeter_session "${PROJECT_SOURCE_DIR}/src/frontend/greeter/qml/SessionButton.qml")
+set(greeter_keyboard "${PROJECT_SOURCE_DIR}/src/frontend/greeter/qml/KeyboardButton.qml")
+foreach(source IN ITEMS "${greeter_main}" "${greeter_login}" "${greeter_session}" "${greeter_keyboard}")
     if(NOT EXISTS "${source}")
         message(FATAL_ERROR "required Meo greeter visual source is missing: ${source}")
     endif()
 endforeach()
 file(READ "${greeter_main}" greeter_main_contents)
-file(READ "${greeter_clock}" greeter_clock_contents)
+file(READ "${greeter_login}" greeter_login_contents)
+file(READ "${greeter_session}" greeter_session_contents)
+file(READ "${greeter_keyboard}" greeter_keyboard_contents)
+set(greeter_visual_contents
+    "${greeter_main_contents}${greeter_login_contents}${greeter_session_contents}${greeter_keyboard_contents}")
 foreach(required_text IN ITEMS
-        "MeoGreeterClock"
+        "MeoAmbientClock"
+        "MeoAuthenticationSurface"
+        "MeoButton"
         "GreeterState"
         "SessionManagement"
         "KeyboardButton"
         "SessionButton"
-        "Kirigami.Theme")
-    string(FIND "${greeter_main_contents}${greeter_clock_contents}" "${required_text}" found_at)
+        "import MeoUI")
+    string(FIND "${greeter_visual_contents}" "${required_text}" found_at)
     if(found_at EQUAL -1)
         message(FATAL_ERROR "greeter visual layer no longer preserves: ${required_text}")
     endif()
@@ -55,7 +63,7 @@ foreach(forbidden_text IN ITEMS
         "NotificationManager"
         "KWallet"
         "WeatherCache")
-    string(FIND "${greeter_main_contents}${greeter_clock_contents}" "${forbidden_text}" found_at)
+    string(FIND "${greeter_visual_contents}" "${forbidden_text}" found_at)
     if(NOT found_at EQUAL -1)
         message(FATAL_ERROR "greeter visual layer may not read private session data: ${forbidden_text}")
     endif()
