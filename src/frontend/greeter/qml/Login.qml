@@ -251,7 +251,7 @@ SessionManagementScreen {
                 }
             }
 
-            function onShowPasswordChanged() {
+            function onPasswordVisibleChanged() {
                 if (PlasmaLogin.GreeterState.showPassword != passwordBox.passwordVisible) {
                     PlasmaLogin.GreeterState.showPassword = passwordBox.passwordVisible;
                 }
