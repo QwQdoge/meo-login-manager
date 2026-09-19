@@ -11,9 +11,13 @@ import org.kde.plasma.components 3.0 as PlasmaComponents
 import org.kde.kirigami 2.20 as Kirigami
 
 import org.kde.plasma.login as PlasmaLogin
+import MeoUI 1.0
 
-PlasmaComponents.ToolButton {
+MeoButton {
     id: root
+    type: "tonal"
+    size: "s"
+    icon.name: "desktop_windows"
 
     property int currentIndex: PlasmaLogin.GreeterState.sessionIndex
 
