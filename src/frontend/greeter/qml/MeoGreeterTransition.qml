@@ -73,7 +73,6 @@ Item {
                 scale: 0.94
                 opacity: 0.94
                 color: meoTheme.surfaceContainerHigh
-                border.color: meoTheme.outlineVariant
             }
             PropertyChanges {
                 target: lockIcon
@@ -97,7 +96,6 @@ Item {
                 scale: 1
                 opacity: 0.82
                 color: meoTheme.surfaceContainer
-                border.color: meoTheme.outlineVariant
             }
             PropertyChanges {
                 target: lockIcon
@@ -121,7 +119,6 @@ Item {
                 scale: 0.88
                 opacity: 0
                 color: meoTheme.successContainer
-                border.color: meoTheme.success
             }
             PropertyChanges {
                 target: lockIcon
@@ -139,17 +136,26 @@ Item {
 
             ParallelAnimation {
                 NumberAnimation {
+                    target: surface
                     properties: "width,height,radius,rotation,scale"
                     duration: meoTheme.durationSpatial
                     easing.type: Easing.OutCubic
                 }
                 NumberAnimation {
+                    target: surface
                     property: "opacity"
                     duration: meoTheme.durationDefault
                     easing.type: Easing.OutCubic
                 }
                 ColorAnimation {
-                    properties: "color,border.color"
+                    target: surface
+                    property: "color"
+                    duration: meoTheme.durationDefault
+                    easing.type: Easing.OutCubic
+                }
+                ColorAnimation {
+                    target: lockIcon
+                    property: "color"
                     duration: meoTheme.durationDefault
                     easing.type: Easing.OutCubic
                 }
@@ -161,17 +167,26 @@ Item {
 
             ParallelAnimation {
                 NumberAnimation {
+                    target: surface
                     properties: "width,height,radius,rotation,scale"
                     duration: meoTheme.durationExit
                     easing.type: Easing.InOutCubic
                 }
                 NumberAnimation {
+                    target: surface
                     property: "opacity"
                     duration: meoTheme.durationDefault
                     easing.type: Easing.InOutCubic
                 }
                 ColorAnimation {
-                    properties: "color,border.color"
+                    target: surface
+                    property: "color"
+                    duration: meoTheme.durationDefault
+                    easing.type: Easing.InOutCubic
+                }
+                ColorAnimation {
+                    target: lockIcon
+                    property: "color"
                     duration: meoTheme.durationDefault
                     easing.type: Easing.InOutCubic
                 }
@@ -183,13 +198,14 @@ Item {
             SequentialAnimation {
                 ParallelAnimation {
                     NumberAnimation {
+                        target: surface
                         properties: "width,height,radius,rotation,scale"
                         duration: meoTheme.durationExit
                         easing.type: Easing.InOutCubic
                     }
                     ColorAnimation {
                         target: surface
-                        properties: "color,border.color"
+                        property: "color"
                         duration: meoTheme.durationFast
                         easing.type: Easing.OutCubic
                     }
