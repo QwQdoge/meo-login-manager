@@ -4,7 +4,7 @@
  */
 
 import QtQuick
-import org.kde.kirigami as Kirigami
+import QtQuick.Controls
 
 QtObject {
     id: root
@@ -12,7 +12,7 @@ QtObject {
     // The login greeter must remain self-contained and must not depend on a
     // previous user's QML runtime. Mirror the canonical MeoUI fallback roles
     // here as a small presentation-only token table.
-    readonly property bool darkMode: Kirigami.Theme.backgroundColor.hslLightness < 0.5
+    readonly property bool darkMode: Application.styleHints.colorScheme === Qt.Dark
 
     readonly property string brandFont: "Comfortaa"
     readonly property string plainFont: "Roboto"
