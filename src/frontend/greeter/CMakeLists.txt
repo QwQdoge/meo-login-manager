@@ -33,6 +33,7 @@ ecm_target_qml_sources(plasma-login-greeter
     SOURCES
     qml/Main.qml
     qml/MeoGreeterClock.qml
+    qml/MeoGreeterTransition.qml
     qml/Login.qml
     qml/SessionButton.qml
     qml/KeyboardButton.qml
