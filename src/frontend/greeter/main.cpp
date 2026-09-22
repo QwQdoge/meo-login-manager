@@ -87,7 +87,10 @@ private:
         window->installEventFilter(greeterEventFilter);
         window->rootContext()->setContextProperty(QStringLiteral("greeterEventFilter"), greeterEventFilter);
 
-        window->setSource(QUrl("qrc:/qt/qml/org/kde/plasma/login/Main.qml"));
+        // MeoMain is presentation-only and wraps the upstream-compatible Main
+        // greeter. Authentication/session handling remains in the existing
+        // Plasma Login Manager QML/C++ objects.
+        window->setSource(QUrl("qrc:/qt/qml/org/kde/plasma/login/MeoMain.qml"));
         window->show();
     }
 
