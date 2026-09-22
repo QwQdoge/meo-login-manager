@@ -21,10 +21,14 @@ Item {
 
     state: succeeded ? "success" : (expanded ? "expanded" : "collapsed")
 
+    MeoGreeterTheme {
+        id: meoTheme
+    }
+
     Rectangle {
         id: scrim
         anchors.fill: parent
-        color: Kirigami.Theme.backgroundColor
+        color: meoTheme.scrim
         opacity: 0.10
     }
 
@@ -36,10 +40,10 @@ Item {
         radius: root.collapsedRadius
         rotation: 180
         scale: 0.94
-        opacity: 0.90
-        color: Kirigami.Theme.backgroundColor
+        opacity: 0.94
+        color: meoTheme.surfaceContainerHigh
         border.width: 1
-        border.color: Kirigami.Theme.disabledTextColor
+        border.color: meoTheme.outlineVariant
 
         Kirigami.Icon {
             id: lockIcon
@@ -47,7 +51,7 @@ Item {
             width: Math.min(parent.width, parent.height) * 0.42
             height: width
             source: "system-lock-screen"
-            color: Kirigami.Theme.textColor
+            color: meoTheme.onSurface
             opacity: 1
             rotation: -surface.rotation
         }
@@ -67,11 +71,14 @@ Item {
                 radius: root.collapsedRadius
                 rotation: 180
                 scale: 0.94
-                opacity: 0.90
+                opacity: 0.94
+                color: meoTheme.surfaceContainerHigh
+                border.color: meoTheme.outlineVariant
             }
             PropertyChanges {
                 target: lockIcon
                 source: "system-lock-screen"
+                color: meoTheme.onSurface
                 opacity: 1
             }
         },
@@ -79,7 +86,7 @@ Item {
             name: "expanded"
             PropertyChanges {
                 target: scrim
-                opacity: 0.20
+                opacity: 0.22
             }
             PropertyChanges {
                 target: surface
@@ -88,11 +95,14 @@ Item {
                 radius: root.expandedRadius
                 rotation: 360
                 scale: 1
-                opacity: 0.78
+                opacity: 0.82
+                color: meoTheme.surfaceContainer
+                border.color: meoTheme.outlineVariant
             }
             PropertyChanges {
                 target: lockIcon
                 source: "system-lock-screen"
+                color: meoTheme.primary
                 opacity: 0
             }
         },
@@ -110,10 +120,13 @@ Item {
                 rotation: 540
                 scale: 0.88
                 opacity: 0
+                color: meoTheme.successContainer
+                border.color: meoTheme.success
             }
             PropertyChanges {
                 target: lockIcon
                 source: "object-unlocked"
+                color: meoTheme.success
                 opacity: 1
             }
         }
@@ -127,12 +140,17 @@ Item {
             ParallelAnimation {
                 NumberAnimation {
                     properties: "width,height,radius,rotation,scale"
-                    duration: 520
+                    duration: meoTheme.durationSpatial
                     easing.type: Easing.OutCubic
                 }
                 NumberAnimation {
                     property: "opacity"
-                    duration: 360
+                    duration: meoTheme.durationDefault
+                    easing.type: Easing.OutCubic
+                }
+                ColorAnimation {
+                    properties: "color,border.color"
+                    duration: meoTheme.durationDefault
                     easing.type: Easing.OutCubic
                 }
             }
@@ -144,12 +162,17 @@ Item {
             ParallelAnimation {
                 NumberAnimation {
                     properties: "width,height,radius,rotation,scale"
-                    duration: 420
+                    duration: meoTheme.durationExit
                     easing.type: Easing.InOutCubic
                 }
                 NumberAnimation {
                     property: "opacity"
-                    duration: 300
+                    duration: meoTheme.durationDefault
+                    easing.type: Easing.InOutCubic
+                }
+                ColorAnimation {
+                    properties: "color,border.color"
+                    duration: meoTheme.durationDefault
                     easing.type: Easing.InOutCubic
                 }
             }
@@ -161,13 +184,25 @@ Item {
                 ParallelAnimation {
                     NumberAnimation {
                         properties: "width,height,radius,rotation,scale"
-                        duration: 420
+                        duration: meoTheme.durationExit
                         easing.type: Easing.InOutCubic
+                    }
+                    ColorAnimation {
+                        target: surface
+                        properties: "color,border.color"
+                        duration: meoTheme.durationFast
+                        easing.type: Easing.OutCubic
+                    }
+                    ColorAnimation {
+                        target: lockIcon
+                        property: "color"
+                        duration: meoTheme.durationFast
+                        easing.type: Easing.OutCubic
                     }
                     NumberAnimation {
                         target: lockIcon
                         property: "opacity"
-                        duration: 220
+                        duration: meoTheme.durationFast
                         easing.type: Easing.OutCubic
                     }
                 }
@@ -175,13 +210,13 @@ Item {
                     NumberAnimation {
                         target: surface
                         property: "opacity"
-                        duration: 220
+                        duration: meoTheme.durationFast
                         easing.type: Easing.InCubic
                     }
                     NumberAnimation {
                         target: scrim
                         property: "opacity"
-                        duration: 260
+                        duration: meoTheme.durationFast
                         easing.type: Easing.InCubic
                     }
                 }
