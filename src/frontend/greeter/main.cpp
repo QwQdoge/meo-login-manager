@@ -6,6 +6,7 @@
 
 #include <QCommandLineOption>
 #include <QCommandLineParser>
+#include <QFont>
 #include <QGuiApplication>
 #include <QObject>
 #include <QQmlContext>
@@ -119,6 +120,10 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
 
     QGuiApplication app(argc, argv);
+    // MeoUI plain/UI typography is Roboto. Brand/display surfaces opt into
+    // Comfortaa in QML; ordinary Plasma/Kirigami controls inherit this font.
+    app.setFont(QFont(QStringLiteral("Roboto")));
+
     parser.process(app);
     LoginGreeter::setTestModeEnabled(parser.isSet(QStringLiteral("test")));
 
