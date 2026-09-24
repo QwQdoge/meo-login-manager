@@ -84,3 +84,18 @@ jobs:
             echo "Greeter exited before the smoke window completed (status=$status)." >&2
             exit 1
           fi
+
+      - name: Smoke greeter test mode
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          exe="$(find build -type f -name plasma-login-greeter -perm -u+x -print -quit)"
+          test -n "$exe"
+          set +e
+          timeout 5s "$exe" --test
+          status=$?
+          set -e
+          if [ "$status" -ne 124 ]; then
+            echo "Greeter test mode exited unexpectedly with status $status." >&2
+            exit "$status"
+          fi
