@@ -46,20 +46,19 @@ jobs:
           ref: main
           path: deps/MeoUI
 
-      - name: Build and stage MeoUI
+      - name: Build MeoUI runtime
         run: |
           cmake --fresh -S deps/MeoUI -B deps/build-meoui -G Ninja \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DBUILD_TESTING=OFF \
             -DMEOUI_BUILD_SHOWCASE=OFF \
             -DCMAKE_INSTALL_PREFIX=/tmp/meoui-install
-          cmake --build deps/build-meoui --target meoui_module meoui_lrelease --parallel 2
-          cmake --install deps/build-meoui
+          cmake --build deps/build-meoui --parallel 2
 
       - name: Configure Plasma Login
         env:
-          QML_IMPORT_PATH: /tmp/meoui-install/lib/qt6/qml
-          QML2_IMPORT_PATH: /tmp/meoui-install/lib/qt6/qml
+          QML_IMPORT_PATH: ${{ github.workspace }}/deps/build-meoui
+          QML2_IMPORT_PATH: ${{ github.workspace }}/deps/build-meoui
         run: >-
           cmake --fresh -S . -B build -G Ninja
           -DCMAKE_BUILD_TYPE=RelWithDebInfo
@@ -68,13 +67,13 @@ jobs:
 
       - name: Build
         env:
-          QML_IMPORT_PATH: /tmp/meoui-install/lib/qt6/qml
-          QML2_IMPORT_PATH: /tmp/meoui-install/lib/qt6/qml
+          QML_IMPORT_PATH: ${{ github.workspace }}/deps/build-meoui
+          QML2_IMPORT_PATH: ${{ github.workspace }}/deps/build-meoui
         run: cmake --build build --parallel 2
 
       - name: Test
         env:
           QT_QPA_PLATFORM: offscreen
-          QML_IMPORT_PATH: /tmp/meoui-install/lib/qt6/qml
-          QML2_IMPORT_PATH: /tmp/meoui-install/lib/qt6/qml
+          QML_IMPORT_PATH: ${{ github.workspace }}/deps/build-meoui
+          QML2_IMPORT_PATH: ${{ github.workspace }}/deps/build-meoui
         run: ctest --test-dir build --output-on-failure --timeout 60
