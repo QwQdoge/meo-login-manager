@@ -2,9 +2,6 @@ name: Fork boundary
 
 on:
   pull_request:
-  push:
-    branches:
-      - meo/6.7
 
 permissions:
   contents: read
@@ -26,5 +23,5 @@ jobs:
         run: >-
           cmake
           -DPROJECT_SOURCE_DIR="$GITHUB_WORKSPACE"
-          -DUPSTREAM_BASE=v6.7.5
+          -DUPSTREAM_BASE="${{ github.event.pull_request.base.sha }}"
           -P tests/verify-meo-fork-boundary.cmake
