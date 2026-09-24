@@ -52,6 +52,9 @@ jobs:
           ref: main
           path: deps/MeoUI
 
+      - name: Exclude CI-only dependency checkout from fork boundary
+        run: printf '/deps/\n' >> .git/info/exclude
+
       - name: Build MeoUI runtime
         run: |
           cmake --fresh -S deps/MeoUI -B deps/build-meoui -G Ninja \
@@ -90,3 +93,23 @@ jobs:
           QML_IMPORT_PATH: ${{ github.workspace }}/deps/build-meoui
           QML2_IMPORT_PATH: ${{ github.workspace }}/deps/build-meoui
         run: ctest --test-dir build --output-on-failure --timeout 60
+
+      - name: Smoke greeter QML with mock authentication
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_QUICK_BACKEND: software
+          QT_OPENGL: software
+          QML_IMPORT_PATH: ${{ github.workspace }}/deps/build-meoui
+          QML2_IMPORT_PATH: ${{ github.workspace }}/deps/build-meoui
+        run: |
+          greeter="$(find build -type f -name plasma-login-greeter -perm -111 -print -quit)"
+          test -n "$greeter"
+          set +e
+          timeout 6s "$greeter" --test >/tmp/meo-greeter-smoke.log 2>&1
+          status=$?
+          set -e
+          if [ "$status" -ne 124 ]; then
+            cat /tmp/meo-greeter-smoke.log
+            echo "Greeter exited before the smoke window completed (status=$status)." >&2
+            exit 1
+          fi
