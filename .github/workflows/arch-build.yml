@@ -66,3 +66,21 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
         run: ctest --test-dir build --output-on-failure --timeout 60
+
+      - name: Smoke greeter QML with mock authentication
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_QUICK_BACKEND: software
+          QT_OPENGL: software
+        run: |
+          greeter="$(find build -type f -name plasma-login-greeter -perm -111 -print -quit)"
+          test -n "$greeter"
+          set +e
+          timeout 6s "$greeter" --test >/tmp/meo-greeter-smoke.log 2>&1
+          status=$?
+          set -e
+          if [ "$status" -ne 124 ]; then
+            cat /tmp/meo-greeter-smoke.log
+            echo "Greeter exited before the smoke window completed (status=$status)." >&2
+            exit 1
+          fi
