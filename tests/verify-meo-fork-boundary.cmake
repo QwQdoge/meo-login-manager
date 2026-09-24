@@ -147,6 +147,7 @@ set(protected_paths
     "src/frontend/startkde/"
 )
 set(allowed_paths
+    ".github/workflows/fork-boundary.yml"
     "CMakeLists.txt"
     "cmake/MeoForkBoundary.cmake"
     "docs/"
