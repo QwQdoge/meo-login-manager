@@ -7,12 +7,14 @@ project(PLASMALOGIN VERSION ${PROJECT_VERSION})
 # Meo keeps this fork intentionally narrow.  The contract test is source-only
 # and has no runtime dependency, so it can also run in a packaging checkout.
 include(CTest)
+set(MEO_FORK_REVIEW_BASE "origin/main" CACHE STRING
+    "Git ref used to review Meo thin-fork changes; upstream provenance remains pinned in MEO_FORK_POLICY.md")
 if(BUILD_TESTING)
     add_test(
         NAME meo-fork-boundary
         COMMAND ${CMAKE_COMMAND}
             -DPROJECT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
-            -DUPSTREAM_BASE=v${PROJECT_VERSION}
+            -DUPSTREAM_BASE=${MEO_FORK_REVIEW_BASE}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/verify-meo-fork-boundary.cmake
     )
 endif()
