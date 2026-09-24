@@ -1,0 +1,30 @@
+name: Fork boundary
+
+on:
+  pull_request:
+  push:
+    branches:
+      - meo/6.7
+
+permissions:
+  contents: read
+
+jobs:
+  boundary:
+    name: Thin-fork security boundary
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Verify reviewed fork surface
+        run: >-
+          cmake
+          -DPROJECT_SOURCE_DIR="$GITHUB_WORKSPACE"
+          -DUPSTREAM_BASE=v6.7.5
+          -P tests/verify-meo-fork-boundary.cmake
