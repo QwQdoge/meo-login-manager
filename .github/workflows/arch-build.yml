@@ -1,0 +1,80 @@
+name: Arch build and CTest
+
+on:
+  pull_request:
+  push:
+    branches:
+      - meo/session-entry-final-polish
+      - feature/meo-login-greeter
+
+permissions:
+  contents: read
+
+concurrency:
+  group: arch-build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Plasma Login build
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    timeout-minutes: 35
+    env:
+      HOME: /tmp/meo-login-ci-home
+
+    steps:
+      - name: Install build dependencies
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --needed --noconfirm \
+            base-devel cmake ninja git extra-cmake-modules pkgconf \
+            qt6-base qt6-declarative qt6-tools qt6-shadertools qt6-5compat \
+            kconfig kpackage kwindowsystem ki18n kdbusaddons kcmutils kauth \
+            kio kcoreaddons libplasma plasma-workspace layer-shell-qt \
+            libkscreen breeze pam libxau libx11 systemd
+          mkdir -p "$HOME"
+
+      - name: Check out Meo Login Manager
+        uses: actions/checkout@v6
+
+      - name: Check out MeoUI
+        uses: actions/checkout@v6
+        with:
+          repository: QwQdoge/MeoUI
+          ref: main
+          path: deps/MeoUI
+
+      - name: Build and stage MeoUI
+        run: |
+          cmake --fresh -S deps/MeoUI -B deps/build-meoui -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DBUILD_TESTING=OFF \
+            -DMEOUI_BUILD_SHOWCASE=OFF \
+            -DCMAKE_INSTALL_PREFIX=/tmp/meoui-install
+          cmake --build deps/build-meoui --target meoui_module --parallel 2
+          cmake --install deps/build-meoui
+
+      - name: Configure Plasma Login
+        env:
+          QML_IMPORT_PATH: /tmp/meoui-install/lib/qt6/qml
+          QML2_IMPORT_PATH: /tmp/meoui-install/lib/qt6/qml
+        run: >-
+          cmake --fresh -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          -DBUILD_TESTING=ON
+          -DCMAKE_INSTALL_PREFIX=/tmp/meo-login-install
+
+      - name: Build
+        env:
+          QML_IMPORT_PATH: /tmp/meoui-install/lib/qt6/qml
+          QML2_IMPORT_PATH: /tmp/meoui-install/lib/qt6/qml
+        run: cmake --build build --parallel 2
+
+      - name: Test
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QML_IMPORT_PATH: /tmp/meoui-install/lib/qt6/qml
+          QML2_IMPORT_PATH: /tmp/meoui-install/lib/qt6/qml
+        run: ctest --test-dir build --output-on-failure --timeout 60
