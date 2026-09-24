@@ -43,11 +43,16 @@ jobs:
           fetch-tags: true
 
       - name: Configure Plasma Login
-        run: >-
-          cmake --fresh -S . -B build -G Ninja
-          -DCMAKE_BUILD_TYPE=RelWithDebInfo
-          -DBUILD_TESTING=ON
-          -DCMAKE_INSTALL_PREFIX=/tmp/meo-login-install
+        run: |
+          review_base="${{ github.event.pull_request.base.sha }}"
+          if [ -z "$review_base" ]; then
+            review_base="$(git merge-base HEAD origin/main)"
+          fi
+          cmake --fresh -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DBUILD_TESTING=ON \
+            -DMEO_FORK_REVIEW_BASE="$review_base" \
+            -DCMAKE_INSTALL_PREFIX=/tmp/meo-login-install
 
       - name: Build
         run: cmake --build build --parallel 2
