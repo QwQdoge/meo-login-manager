@@ -63,10 +63,12 @@ jobs:
           QML_IMPORT_PATH: ${{ github.workspace }}/deps/build-meoui
           QML2_IMPORT_PATH: ${{ github.workspace }}/deps/build-meoui
         run: |
-          review_base="${{ github.event.pull_request.base.sha }}"
-          if [ -z "$review_base" ]; then
-            review_base="$(git merge-base HEAD origin/main)"
+          review_branch="${{ github.base_ref }}"
+          if [ -z "$review_branch" ]; then
+            review_branch=main
           fi
+          review_base="origin/$review_branch"
+          git rev-parse --verify "$review_base^{commit}" >/dev/null
           cmake --fresh -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DBUILD_TESTING=ON \
