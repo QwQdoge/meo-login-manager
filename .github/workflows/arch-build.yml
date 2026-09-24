@@ -53,7 +53,7 @@ jobs:
             -DBUILD_TESTING=OFF \
             -DMEOUI_BUILD_SHOWCASE=OFF \
             -DCMAKE_INSTALL_PREFIX=/tmp/meoui-install
-          cmake --build deps/build-meoui --target meoui_module --parallel 2
+          cmake --build deps/build-meoui --target meoui_module meoui_lrelease --parallel 2
           cmake --install deps/build-meoui
 
       - name: Configure Plasma Login
