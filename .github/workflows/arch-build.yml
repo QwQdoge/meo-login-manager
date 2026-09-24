@@ -42,6 +42,9 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Trust checked-out workspace for Git-based tests
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - name: Check out MeoUI
         uses: actions/checkout@v6
         with:
