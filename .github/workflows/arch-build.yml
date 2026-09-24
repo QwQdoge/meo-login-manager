@@ -55,6 +55,4 @@ jobs:
       - name: Test
         env:
           QT_QPA_PLATFORM: offscreen
-          QML_IMPORT_PATH: ${{ github.workspace }}/deps/build-meoui
-          QML2_IMPORT_PATH: ${{ github.workspace }}/deps/build-meoui
         run: ctest --test-dir build --output-on-failure --timeout 60
