@@ -156,6 +156,7 @@ set(protected_paths
 )
 set(allowed_paths
     ".github/workflows/fork-boundary.yml"
+    ".github/workflows/arch-build.yml"
     "CMakeLists.txt"
     "cmake/MeoForkBoundary.cmake"
     "docs/"
