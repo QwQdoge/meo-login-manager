@@ -38,6 +38,9 @@ jobs:
 
       - name: Check out Meo Login Manager
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Check out MeoUI
         uses: actions/checkout@v6
