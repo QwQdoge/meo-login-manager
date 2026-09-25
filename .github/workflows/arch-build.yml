@@ -1,0 +1,87 @@
+name: Arch build and CTest
+
+on:
+  pull_request:
+  push:
+    branches:
+      - meo/session-entry-final-polish
+      - feature/meo-login-greeter
+
+permissions:
+  contents: read
+
+concurrency:
+  group: arch-build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Plasma Login build
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    timeout-minutes: 35
+    env:
+      HOME: /tmp/meo-login-ci-home
+
+    steps:
+      - name: Install build dependencies
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --needed --noconfirm \
+            base-devel cmake ninja git extra-cmake-modules pkgconf \
+            qt6-base qt6-declarative qt6-tools qt6-shadertools qt6-5compat \
+            kconfig kpackage kwindowsystem ki18n kdbusaddons kcmutils kauth \
+            kio kcoreaddons libplasma plasma-workspace layer-shell-qt \
+            libkscreen breeze pam libxau libx11 systemd
+          mkdir -p "$HOME"
+
+      - name: Check out Meo Login Manager
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Trust checked-out workspace for Git-based tests
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Configure Plasma Login
+        run: |
+          review_branch="${{ github.base_ref }}"
+          if [ -z "$review_branch" ]; then
+            review_branch=main
+          fi
+          review_base="origin/$review_branch"
+          git rev-parse --verify "$review_base^{commit}" >/dev/null
+          cmake --fresh -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DBUILD_TESTING=ON \
+            -DMEO_FORK_REVIEW_BASE="$review_base" \
+            -DCMAKE_INSTALL_PREFIX=/tmp/meo-login-install
+
+      - name: Build
+        run: cmake --build build --parallel 2
+
+      - name: Test
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: ctest --test-dir build --output-on-failure --timeout 60
+
+      - name: Smoke greeter QML with mock authentication
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_QUICK_BACKEND: software
+          QT_OPENGL: software
+        run: |
+          greeter="$(find build -type f -name plasma-login-greeter -perm -111 -print -quit)"
+          test -n "$greeter"
+          set +e
+          timeout 6s "$greeter" --test >/tmp/meo-greeter-smoke.log 2>&1
+          status=$?
+          set -e
+          if [ "$status" -ne 124 ]; then
+            cat /tmp/meo-greeter-smoke.log
+            echo "Greeter exited before the smoke window completed (status=$status)." >&2
+            exit 1
+          fi
+
