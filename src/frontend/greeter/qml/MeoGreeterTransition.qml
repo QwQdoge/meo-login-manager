@@ -210,28 +210,28 @@ Item {
                         properties: "width,height,radius,rotation,scale"
                         duration: meoTheme.durationExit
                         easing.type: Easing.BezierSpline
-                    easing.bezierCurve: meoTheme.easingEmphasized
+                        easing.bezierCurve: meoTheme.easingEmphasized
                     }
                     ColorAnimation {
                         target: surface
                         property: "color"
                         duration: meoTheme.durationFast
                         easing.type: Easing.BezierSpline
-                    easing.bezierCurve: meoTheme.easingEmphasizedDecelerate
+                        easing.bezierCurve: meoTheme.easingStandardDecelerate
                     }
                     ColorAnimation {
                         target: lockIcon
                         property: "color"
                         duration: meoTheme.durationFast
                         easing.type: Easing.BezierSpline
-                    easing.bezierCurve: meoTheme.easingEmphasizedDecelerate
+                        easing.bezierCurve: meoTheme.easingStandardDecelerate
                     }
                     NumberAnimation {
                         target: lockIcon
                         property: "opacity"
                         duration: meoTheme.durationFast
                         easing.type: Easing.BezierSpline
-                    easing.bezierCurve: meoTheme.easingEmphasizedDecelerate
+                        easing.bezierCurve: meoTheme.easingStandardDecelerate
                     }
                 }
                 ParallelAnimation {
@@ -240,14 +240,14 @@ Item {
                         property: "opacity"
                         duration: meoTheme.durationFast
                         easing.type: Easing.BezierSpline
-                    easing.bezierCurve: meoTheme.easingStandardAccelerate
+                        easing.bezierCurve: meoTheme.easingStandardAccelerate
                     }
                     NumberAnimation {
                         target: scrim
                         property: "opacity"
                         duration: meoTheme.durationFast
                         easing.type: Easing.BezierSpline
-                    easing.bezierCurve: meoTheme.easingStandardAccelerate
+                        easing.bezierCurve: meoTheme.easingStandardAccelerate
                     }
                 }
             }
