@@ -51,11 +51,22 @@ QtObject {
     readonly property color successContainer: darkMode ? "#164A27" : "#D8F3DC"
     readonly property color onSuccessContainer: darkMode ? "#C1F1CB" : "#123C20"
 
-    // Shared motion values aligned with MeoUI's semantic timing scale. The
-    // greeter uses only these presentation constants; auth/session timing is
-    // never delayed by them.
-    readonly property int durationFast: 220
-    readonly property int durationDefault: 360
-    readonly property int durationSpatial: 520
-    readonly property int durationExit: 420
+    // Self-contained mirror of MeoUI's Material 3 motion contract.  The
+    // display manager cannot depend on a logged-in user's MeoUI plugin, so the
+    // greeter embeds only the small presentation token subset it consumes.
+    // Keep spatial transitions expressive and effects monotonic, matching the
+    // Caelestia/end-4 rhythm without creating a second greeter-only language.
+    readonly property int durationFast: 200
+    readonly property int durationDefault: 250
+    readonly property int durationSpatial: 500
+    readonly property int durationExit: 350
+
+    readonly property list<real> easingStandard: [0.2, 0, 0, 1]
+    readonly property list<real> easingStandardAccelerate: [0.3, 0, 1, 1]
+    readonly property list<real> easingStandardDecelerate: [0, 0, 0, 1]
+    readonly property list<real> easingEmphasized: [
+        0.05, 0, 0.133333, 0.06, 0.166666, 0.4,
+        0.208333, 0.82, 0.25, 1, 1, 1
+    ]
+    readonly property list<real> easingEmphasizedDecelerate: [0.05, 0.7, 0.1, 1]
 }
