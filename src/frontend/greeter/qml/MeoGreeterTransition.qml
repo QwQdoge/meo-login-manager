@@ -139,25 +139,29 @@ Item {
                     target: surface
                     properties: "width,height,radius,rotation,scale"
                     duration: meoTheme.durationSpatial
-                    easing.type: Easing.OutCubic
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: meoTheme.easingEmphasizedDecelerate
                 }
                 NumberAnimation {
                     target: surface
                     property: "opacity"
                     duration: meoTheme.durationDefault
-                    easing.type: Easing.OutCubic
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: meoTheme.easingStandardDecelerate
                 }
                 ColorAnimation {
                     target: surface
                     property: "color"
                     duration: meoTheme.durationDefault
-                    easing.type: Easing.OutCubic
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: meoTheme.easingStandardDecelerate
                 }
                 ColorAnimation {
                     target: lockIcon
                     property: "color"
                     duration: meoTheme.durationDefault
-                    easing.type: Easing.OutCubic
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: meoTheme.easingStandardDecelerate
                 }
             }
         },
@@ -170,25 +174,29 @@ Item {
                     target: surface
                     properties: "width,height,radius,rotation,scale"
                     duration: meoTheme.durationExit
-                    easing.type: Easing.InOutCubic
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: meoTheme.easingEmphasized
                 }
                 NumberAnimation {
                     target: surface
                     property: "opacity"
                     duration: meoTheme.durationDefault
-                    easing.type: Easing.InOutCubic
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: meoTheme.easingStandard
                 }
                 ColorAnimation {
                     target: surface
                     property: "color"
                     duration: meoTheme.durationDefault
-                    easing.type: Easing.InOutCubic
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: meoTheme.easingStandard
                 }
                 ColorAnimation {
                     target: lockIcon
                     property: "color"
                     duration: meoTheme.durationDefault
-                    easing.type: Easing.InOutCubic
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: meoTheme.easingStandard
                 }
             }
         },
@@ -201,25 +209,29 @@ Item {
                         target: surface
                         properties: "width,height,radius,rotation,scale"
                         duration: meoTheme.durationExit
-                        easing.type: Easing.InOutCubic
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: meoTheme.easingEmphasized
                     }
                     ColorAnimation {
                         target: surface
                         property: "color"
                         duration: meoTheme.durationFast
-                        easing.type: Easing.OutCubic
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: meoTheme.easingStandardDecelerate
                     }
                     ColorAnimation {
                         target: lockIcon
                         property: "color"
                         duration: meoTheme.durationFast
-                        easing.type: Easing.OutCubic
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: meoTheme.easingStandardDecelerate
                     }
                     NumberAnimation {
                         target: lockIcon
                         property: "opacity"
                         duration: meoTheme.durationFast
-                        easing.type: Easing.OutCubic
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: meoTheme.easingStandardDecelerate
                     }
                 }
                 ParallelAnimation {
@@ -227,13 +239,15 @@ Item {
                         target: surface
                         property: "opacity"
                         duration: meoTheme.durationFast
-                        easing.type: Easing.InCubic
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: meoTheme.easingStandardAccelerate
                     }
                     NumberAnimation {
                         target: scrim
                         property: "opacity"
                         duration: meoTheme.durationFast
-                        easing.type: Easing.InCubic
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: meoTheme.easingStandardAccelerate
                     }
                 }
             }

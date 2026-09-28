@@ -49,6 +49,32 @@ foreach(required_text IN ITEMS
         message(FATAL_ERROR "greeter visual layer no longer preserves: ${required_text}")
     endif()
 endforeach()
+set(greeter_theme "${PROJECT_SOURCE_DIR}/src/frontend/greeter/qml/MeoGreeterTheme.qml")
+set(greeter_transition "${PROJECT_SOURCE_DIR}/src/frontend/greeter/qml/MeoGreeterTransition.qml")
+file(READ "${greeter_theme}" greeter_theme_contents)
+file(READ "${greeter_transition}" greeter_transition_contents)
+foreach(required_text IN ITEMS
+        "durationSpatial: 500"
+        "easingStandard:"
+        "easingEmphasized:"
+        "Easing.BezierSpline"
+        "meoTheme.easingEmphasized"
+        "meoTheme.easingStandard")
+    string(FIND "${greeter_theme_contents}${greeter_transition_contents}" "${required_text}" found_at)
+    if(found_at EQUAL -1)
+        message(FATAL_ERROR "greeter Material motion contract is missing: ${required_text}")
+    endif()
+endforeach()
+foreach(forbidden_curve IN ITEMS
+        "Easing.OutCubic"
+        "Easing.InOutCubic"
+        "Easing.InCubic")
+    string(FIND "${greeter_transition_contents}" "${forbidden_curve}" found_at)
+    if(NOT found_at EQUAL -1)
+        message(FATAL_ERROR "greeter bypasses Meo Material motion tokens: ${forbidden_curve}")
+    endif()
+endforeach()
+
 foreach(forbidden_text IN ITEMS
         "import Meo.System"
         "MediaController"

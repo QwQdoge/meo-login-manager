@@ -19,7 +19,7 @@ Typography:
 
 Color roles follow the same MeoUI light/dark fallback role tables: primary and containers, surface hierarchy, outlines, error roles and Meo semantic success. New greeter-specific UI must consume these semantic roles rather than hard-coded decorative colors.
 
-Motion uses the Meo transition layer's semantic timings. Authentication/session-start code must never sleep or wait merely to make presentation motion longer.
+Motion mirrors MeoUI's Material 3 contract: spatial size/position/shape transitions use the emphasized expressive curve, while opacity and color use monotonic standard curves. The 500 ms spatial baseline deliberately matches the expressive-default rhythm used by Caelestia and end-4 without importing either shell's service or model code. Authentication/session-start code must never sleep or wait merely to make presentation motion longer.
 
 ## Implementation
 
