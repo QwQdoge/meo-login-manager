@@ -4,6 +4,7 @@ on:
   pull_request:
   push:
     branches:
+      - meo/6.7
       - meo/session-entry-final-polish
       - feature/meo-login-greeter
 
@@ -48,10 +49,14 @@ jobs:
       - name: Configure Plasma Login
         run: |
           review_branch="${{ github.base_ref }}"
-          if [ -z "$review_branch" ]; then
-            review_branch=main
+          if [ -n "$review_branch" ]; then
+            review_base="origin/$review_branch"
+          else
+            # A push to the reviewed fork branch has no base_ref. Compare the
+            # new commit against its direct predecessor instead of assuming a
+            # repository branch named main exists.
+            review_base="HEAD^"
           fi
-          review_base="origin/$review_branch"
           git rev-parse --verify "$review_base^{commit}" >/dev/null
           cmake --fresh -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
