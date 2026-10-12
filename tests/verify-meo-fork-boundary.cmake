@@ -112,15 +112,32 @@ endif()
 execute_process(
     COMMAND "${GIT_EXECUTABLE}" -C "${PROJECT_SOURCE_DIR}" rev-parse --verify "${UPSTREAM_BASE}^{commit}"
     RESULT_VARIABLE base_result
-    OUTPUT_QUIET
+    OUTPUT_VARIABLE base_commit
     ERROR_QUIET
+    OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+set(pinned_v675 "e63894e7923db053413915ea582db2757303ca8f")
 if(NOT base_result EQUAL 0)
-    message(FATAL_ERROR "upstream base ${UPSTREAM_BASE} is unavailable")
+    # Source mirrors may retain the pinned upstream commit without its tag.
+    # Resolve only the documented v6.7.5 object; never guess a merge base.
+    if(UPSTREAM_BASE STREQUAL "v6.7.5")
+        set(base_commit "${pinned_v675}")
+        execute_process(
+            COMMAND "${GIT_EXECUTABLE}" -C "${PROJECT_SOURCE_DIR}" cat-file -e "${base_commit}^{commit}"
+            RESULT_VARIABLE base_result
+            ERROR_QUIET
+        )
+    endif()
+    if(NOT base_result EQUAL 0)
+        message(FATAL_ERROR "upstream base ${UPSTREAM_BASE} is unavailable")
+    endif()
+endif()
+if(UPSTREAM_BASE STREQUAL "v6.7.5" AND NOT base_commit STREQUAL pinned_v675)
+    message(FATAL_ERROR "upstream base ${UPSTREAM_BASE} does not match the pinned commit")
 endif()
 
 execute_process(
-    COMMAND "${GIT_EXECUTABLE}" -C "${PROJECT_SOURCE_DIR}" diff --name-only "${UPSTREAM_BASE}...HEAD"
+    COMMAND "${GIT_EXECUTABLE}" -C "${PROJECT_SOURCE_DIR}" diff --name-only "${base_commit}...HEAD"
     RESULT_VARIABLE diff_result
     OUTPUT_VARIABLE changed_paths
     ERROR_VARIABLE diff_error
@@ -175,7 +192,9 @@ set(protected_paths
 set(allowed_paths
     ".github/workflows/fork-boundary.yml"
     ".github/workflows/arch-build.yml"
+    "AGENTS.md"
     "CMakeLists.txt"
+    "README.md"
     "cmake/MeoForkBoundary.cmake"
     "docs/"
     "packaging/"

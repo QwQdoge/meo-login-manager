@@ -3,6 +3,9 @@
 ## Scope and fork boundary
 
 This repository is the MeoArch-maintained Plasma Login thin fork. Keep Meo-specific changes narrow so upstream rebases remain reviewable.
+The shared workspace rules in `../AGENTS.md` apply here. The fork baseline is pinned to `v6.7.5`; read `docs/MEO_FORK_POLICY.md` and `docs/MEO_SESSION_ENTRY_CONTRACT.md` before edits.
+
+Keep greeter presentation in `src/frontend/greeter/`. Preserve upstream PAM, authentication, daemon, D-Bus, service, and session-start code unless a separately reviewed upstream security repair requires a change.
 
 Inspect `git status`, the affected upstream/Meo files, and the nearest test before editing. Do not copy unrelated Meo shell/UI code into this fork to bypass an integration boundary. Read only task-relevant upstream/fork contracts.
 
@@ -14,6 +17,8 @@ For normal source changes, mirror `.github/workflows/arch-build.yml`:
 2. `cmake --build build --parallel 2`
 3. `QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure --timeout 60`
 4. For greeter changes, run the workflow's mock-authentication greeter smoke.
+
+Use a staged install and `plasma-login-greeter --test` for the greeter validation path. Verify real PAM and Wayland login in the project VM before claiming release readiness.
 
 For changes that expand or alter the Meo fork surface, also run:
 

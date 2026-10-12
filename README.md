@@ -1,3 +1,12 @@
+## Meo Login Manager
+
+This checkout is MeoArch's presentation-only fork of Plasma Login Manager.
+The service, PAM, authentication, and session contracts remain upstream; see
+[`docs/MEO_FORK_POLICY.md`](docs/MEO_FORK_POLICY.md) for the pinned baseline and
+reviewed change surface. The instructions below describe the upstream project
+and are not an authorization to replace the host display manager during local
+validation.
+
 ## Plasma Login
 
 Plasma Login provides a display manager for KDE Plasma, forked from [SDDM](https://github.com/sddm/sddm) and with an new frontend providing a greeter, wallpaper plugin integration and System Settings module (KCM).
