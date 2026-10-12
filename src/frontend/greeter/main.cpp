@@ -120,6 +120,9 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
 
     QGuiApplication app(argc, argv);
+    app.setApplicationName(QStringLiteral("Meo Login"));
+    app.setApplicationDisplayName(QStringLiteral("Meo Login"));
+    app.setOrganizationName(QStringLiteral("MeoArch"));
     // MeoUI plain/UI typography is Roboto. Brand/display surfaces opt into
     // Comfortaa in QML; ordinary Plasma/Kirigami controls inherit this font.
     app.setFont(QFont(QStringLiteral("Roboto")));
