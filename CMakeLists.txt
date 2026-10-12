@@ -7,7 +7,7 @@ project(PLASMALOGIN VERSION ${PROJECT_VERSION})
 # Meo keeps this fork intentionally narrow.  The contract test is source-only
 # and has no runtime dependency, so it can also run in a packaging checkout.
 include(CTest)
-set(MEO_FORK_REVIEW_BASE "origin/main" CACHE STRING
+set(MEO_FORK_REVIEW_BASE "v6.7.5" CACHE STRING
     "Git ref used to review Meo thin-fork changes; upstream provenance remains pinned in MEO_FORK_POLICY.md")
 if(BUILD_TESTING)
     add_test(
