@@ -29,6 +29,33 @@ Item {
     Kirigami.Theme.inherit: false
 
     property string notificationMessage
+    property string pendingPowerAction: ""
+
+    function confirmPower(action) {
+        PlasmaLogin.GreeterState.clearPasswords()
+        pendingPowerAction = action
+        powerConfirmation.open()
+    }
+
+    QQC2.Dialog {
+        id: powerConfirmation
+        anchors.centerIn: parent
+        modal: true
+        title: root.pendingPowerAction === "sleep" ? i18nd("plasma_login", "Sleep")
+             : root.pendingPowerAction === "hibernate" ? i18nd("plasma_login", "Hibernate")
+             : root.pendingPowerAction === "reboot" ? i18nd("plasma_login", "Restart")
+             : i18nd("plasma_login", "Shut Down")
+        standardButtons: QQC2.Dialog.Ok | QQC2.Dialog.Cancel
+        onAccepted: {
+            const action = root.pendingPowerAction
+            root.pendingPowerAction = ""
+            if (action === "sleep") PlasmaLogin.SessionManagement.suspend()
+            else if (action === "hibernate") PlasmaLogin.SessionManagement.hibernate()
+            else if (action === "reboot") PlasmaLogin.SessionManagement.requestReboot(PlasmaLogin.SessionManagement.ConfirmationMode.Skip)
+            else if (action === "shutdown") PlasmaLogin.SessionManagement.requestShutdown(PlasmaLogin.SessionManagement.ConfirmationMode.Skip)
+        }
+        onRejected: root.pendingPowerAction = ""
+    }
 
     LayoutMirroring.enabled: Qt.application.layoutDirection === Qt.RightToLeft
     LayoutMirroring.childrenInherit: true
@@ -218,8 +245,7 @@ Item {
                         text: i18ndc("plasma_login", "Suspend to disk", "Hibernate")
                         visible: PlasmaLogin.SessionManagement.canHibernate
                         onClicked: {
-                            PlasmaLogin.GreeterState.clearPasswords();
-                            PlasmaLogin.SessionManagement.hibernate();
+                            root.confirmPower("hibernate")
                         }
                     },
                     BreezeComponents.ActionButton {
@@ -227,21 +253,20 @@ Item {
                         text: i18ndc("plasma_login", "Suspend to RAM", "Sleep")
                         visible: PlasmaLogin.SessionManagement.canSuspend
                         onClicked: {
-                            PlasmaLogin.GreeterState.clearPasswords();
-                            PlasmaLogin.SessionManagement.suspend();
+                            root.confirmPower("sleep")
                         }
                     },
                     BreezeComponents.ActionButton {
                         icon.name: "system-reboot"
                         text: i18nd("plasma_login", "Restart")
                         visible: PlasmaLogin.SessionManagement.canReboot
-                        onClicked: PlasmaLogin.SessionManagement.requestReboot(PlasmaLogin.SessionManagement.ConfirmationMode.Skip)
+                        onClicked: root.confirmPower("reboot")
                     },
                     BreezeComponents.ActionButton {
                         icon.name: "system-shutdown"
                         text: i18nd("plasma_login", "Shut Down")
                         visible: PlasmaLogin.SessionManagement.canShutdown
-                        onClicked: PlasmaLogin.SessionManagement.requestShutdown(PlasmaLogin.SessionManagement.ConfirmationMode.Skip)
+                        onClicked: root.confirmPower("shutdown")
                     },
                     BreezeComponents.ActionButton {
                         icon.name: "system-user-prompt"
@@ -357,8 +382,7 @@ Item {
                         text: i18ndc("plasma_login", "Suspend to disk", "Hibernate")
                         visible: PlasmaLogin.SessionManagement.canHibernate
                         onClicked: {
-                            PlasmaLogin.GreeterState.clearPasswords();
-                            PlasmaLogin.SessionManagement.hibernate();
+                            root.confirmPower("hibernate")
                         }
                     },
                     BreezeComponents.ActionButton {
@@ -366,21 +390,20 @@ Item {
                         text: i18ndc("plasma_login", "Suspend to RAM", "Sleep")
                         visible: PlasmaLogin.SessionManagement.canSuspend
                         onClicked: {
-                            PlasmaLogin.GreeterState.clearPasswords();
-                            PlasmaLogin.SessionManagement.suspend();
+                            root.confirmPower("sleep")
                         }
                     },
                     BreezeComponents.ActionButton {
                         icon.name: "system-reboot"
                         text: i18nd("plasma_login", "Restart")
                         visible: PlasmaLogin.SessionManagement.canReboot
-                        onClicked: PlasmaLogin.SessionManagement.requestReboot(PlasmaLogin.SessionManagement.ConfirmationMode.Skip)
+                        onClicked: root.confirmPower("reboot")
                     },
                     BreezeComponents.ActionButton {
                         icon.name: "system-shutdown"
                         text: i18nd("plasma_login", "Shut Down")
                         visible: PlasmaLogin.SessionManagement.canShutdown
-                        onClicked: PlasmaLogin.SessionManagement.requestShutdown(PlasmaLogin.SessionManagement.ConfirmationMode.Skip)
+                        onClicked: root.confirmPower("shutdown")
                     },
                     BreezeComponents.ActionButton {
                         icon.name: "system-user-list"
