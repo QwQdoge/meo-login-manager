@@ -120,7 +120,7 @@ void WallpaperApp::setupWallpaperPlugin(WallpaperWindow *window)
 
     const QUrl sourceUrl = QUrl::fromLocalFile(m_wallpaperPackage.filePath("mainscript"));
 
-    auto *component = new QQmlComponent(window->engine().get(), sourceUrl, window);
+    auto *component = new QQmlComponent(window->engine(), sourceUrl, window);
     if (component->isError()) {
         qWarning() << "Failed to load wallpaper component:" << component->errors();
         return;
