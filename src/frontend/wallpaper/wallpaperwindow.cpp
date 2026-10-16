@@ -6,8 +6,8 @@
 
 #include "wallpaperwindow.h"
 
-WallpaperWindow::WallpaperWindow()
-    : PlasmaQuick::QuickViewSharedEngine()
+WallpaperWindow::WallpaperWindow(QQmlEngine *engine)
+    : QQuickView(engine, nullptr)
 {
 }
 

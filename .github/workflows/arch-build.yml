@@ -65,7 +65,7 @@ jobs:
             -DCMAKE_INSTALL_PREFIX=/tmp/meo-login-install
 
       - name: Build
-        run: cmake --build build --parallel 2
+        run: cmake --build build --parallel 1
 
       - name: Test
         env:
@@ -87,6 +87,10 @@ jobs:
           if [ "$status" -ne 124 ]; then
             cat /tmp/meo-greeter-smoke.log
             echo "Greeter exited before the smoke window completed (status=$status)." >&2
+            exit 1
+          fi
+          if grep -E 'Type .* unavailable|Cannot load library|module .* is not installed|Error loading QML|failed to load component' /tmp/meo-greeter-smoke.log; then
+            cat /tmp/meo-greeter-smoke.log
             exit 1
           fi
 

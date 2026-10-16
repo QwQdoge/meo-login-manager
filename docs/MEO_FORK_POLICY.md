@@ -39,6 +39,21 @@ Git-diff portion.
 
 ## Upstream synchronization
 
+### Plasma 6.8 rendering compatibility
+
+The authentication/session baseline remains `v6.7.5`. The rendering layer
+backports upstream `562becde093b901417066cbedb1d724110dfe44e`
+(QQuickView/globalEngine) and `ac2049aca3e14c0789ff0a3497c337b0c239e8e8`
+(per-window greeter event filter) for PlasmaQuick 6.8. Meo keeps its existing
+greeter source URL, layout, Layer Shell scope and window lifecycle; no protected
+authentication, PAM, daemon, service or session-start files change.
+
+The wallpaper window uses the same engine API backport, without importing
+upstream's unrelated output-adoption restructuring. These five rendering-only
+wallpaper files are the sole additional reviewed surface; their exact content
+is pinned in `tests/plasma68-wallpaper.sha256` and checked by the boundary test.
+Other wallpaper files and all existing protected paths remain forbidden.
+
 1. Fetch `upstream`, choose a released `v6.7.x` tag, and record its full
    commit before changing this branch.
 2. Review upstream changes to every protected path first.  Take authentication,

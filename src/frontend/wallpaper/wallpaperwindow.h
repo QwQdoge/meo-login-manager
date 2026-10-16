@@ -8,15 +8,15 @@
 
 #pragma once
 
-#include <PlasmaQuick/QuickViewSharedEngine>
+#include <QQuickView>
 
-class WallpaperWindow : public PlasmaQuick::QuickViewSharedEngine
+class WallpaperWindow : public QQuickView
 {
     Q_OBJECT
     Q_PROPERTY(bool blur READ blur NOTIFY blurChanged)
 
 public:
-    WallpaperWindow();
+    explicit WallpaperWindow(QQmlEngine *engine);
     bool blur() const;
     void setBlur(bool enable);
 

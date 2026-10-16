@@ -16,9 +16,11 @@
 
 #include <KConfigLoader>
 #include <KConfigPropertyMap>
+#include <KLocalizedQmlContext>
 #include <KPackage/PackageLoader>
 #include <KWindowSystem>
 #include <LayerShellQt/Window>
+#include <PlasmaQuick/PlasmaQuick>
 
 #include "plasmaloginsettings.h"
 
@@ -28,7 +30,9 @@
 
 WallpaperApp::WallpaperApp(int &argc, char **argv)
     : QGuiApplication(argc, argv)
+    , m_engine(PlasmaQuick::globalEngine())
 {
+    KLocalization::setupLocalizedContext(m_engine.get());
     m_wallpaperPackage = KPackage::PackageLoader::self()->loadPackage(QStringLiteral("Plasma/Wallpaper"));
     m_wallpaperPackage.setPath(PlasmaLoginSettings::getInstance().wallpaperPluginId());
 
@@ -48,7 +52,7 @@ WallpaperApp::WallpaperApp(int &argc, char **argv)
 
 void WallpaperApp::createWindowForScreen(QScreen *screen)
 {
-    WallpaperWindow *window = new WallpaperWindow();
+    WallpaperWindow *window = new WallpaperWindow(m_engine.get());
     window->QObject::setParent(this);
     window->setScreen(screen);
     window->setColor(Qt::black);
@@ -71,7 +75,7 @@ void WallpaperApp::createWindowForScreen(QScreen *screen)
         }
     }
 
-    window->setResizeMode(PlasmaQuick::QuickViewSharedEngine::SizeRootObjectToView);
+    window->setResizeMode(QQuickView::SizeRootObjectToView);
 
     if (KWindowSystem::isPlatformX11()) {
         // X11 specific hint only on X11

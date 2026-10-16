@@ -52,6 +52,7 @@ target_link_libraries(plasma-login-greeter PRIVATE
     Qt::Quick
     Qt::DBus
     KF6::I18n
+    KF6::I18nQml
     Plasma::PlasmaQuick
     KF6::Package
     KF6::WindowSystem
@@ -68,3 +69,13 @@ install(TARGETS plasma-login-greeter DESTINATION ${KDE_INSTALL_LIBEXECDIR})
 
 ecm_install_configured_files(INPUT plasma-login.service.in DESTINATION ${KDE_INSTALL_SYSTEMDUSERUNITDIR})
 ki18n_install(po)
+
+if(BUILD_TESTING)
+    add_executable(meo-greeter-window-test
+        ${PROJECT_SOURCE_DIR}/tests/greeter-window-test.cpp
+        greetereventfilter.cpp)
+    target_include_directories(meo-greeter-window-test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(meo-greeter-window-test PRIVATE Qt::Quick Qt::Test KF6::ScreenDpms)
+    add_test(NAME meo-greeter-window-isolation COMMAND meo-greeter-window-test)
+    set_tests_properties(meo-greeter-window-isolation PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+endif()

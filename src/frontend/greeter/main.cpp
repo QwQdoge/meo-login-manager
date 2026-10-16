@@ -10,13 +10,15 @@
 #include <QGuiApplication>
 #include <QObject>
 #include <QQmlContext>
+#include <QQuickView>
 #include <QScreen>
+#include <memory>
 
+#include <KLocalizedQmlContext>
 #include <KLocalizedString>
 #include <KWindowSystem>
 #include <LayerShellQt/Window>
-#include <PlasmaQuick/QuickViewSharedEngine>
-#include <PlasmaQuick/SharedQmlEngine>
+#include <PlasmaQuick/PlasmaQuick>
 #include <kworkspace6/sessionmanagement.h>
 
 #include "backend/GreeterProxy.h"
@@ -35,8 +37,10 @@ class LoginGreeter : public QObject
 public:
     explicit LoginGreeter(QObject *parent = nullptr)
         : QObject(parent)
-        , m_engine(new PlasmaQuick::SharedQmlEngine)
+        , m_engine(PlasmaQuick::globalEngine())
     {
+        KLocalization::setupLocalizedContext(m_engine.get());
+
         connect(qApp, &QGuiApplication::screenAdded, this, [this](QScreen *screen) {
             createWindowForScreen(screen);
         });
@@ -50,7 +54,7 @@ public:
 private:
     void createWindowForScreen(QScreen *screen)
     {
-        auto *window = new PlasmaQuick::QuickViewSharedEngine();
+        auto *window = new QQuickView(m_engine.get(), nullptr);
         window->QObject::setParent(this);
         window->setScreen(screen);
         window->setColor(s_testMode ? Qt::darkGray : Qt::transparent);
@@ -73,7 +77,7 @@ private:
             }
         }
 
-        window->setResizeMode(PlasmaQuick::QuickViewSharedEngine::SizeRootObjectToView);
+        window->setResizeMode(QQuickView::SizeRootObjectToView);
 
         if (KWindowSystem::isPlatformX11()) {
             // X11 specific hint only on X11
@@ -84,10 +88,6 @@ private:
             window->setWindowState(Qt::WindowFullScreen);
         }
 
-        auto *greeterEventFilter = new GreeterEventFilter(this);
-        window->installEventFilter(greeterEventFilter);
-        window->rootContext()->setContextProperty(QStringLiteral("greeterEventFilter"), greeterEventFilter);
-
         // MeoMain is presentation-only and wraps the upstream-compatible Main
         // greeter. Authentication/session handling remains in the existing
         // Plasma Login Manager QML/C++ objects.
@@ -95,8 +95,8 @@ private:
         window->show();
     }
 
-    PlasmaQuick::SharedQmlEngine m_engine;
     static bool s_testMode;
+    std::shared_ptr<QQmlEngine> m_engine;
 };
 
 bool LoginGreeter::s_testMode = false;
@@ -142,6 +142,7 @@ int main(int argc, char *argv[])
     qmlRegisterSingletonInstance("org.kde.plasma.login", 0, 1, "Settings", &PlasmaLoginSettings::getInstance());
     qmlRegisterSingletonInstance("org.kde.plasma.login", 0, 1, "StateConfig", StateConfig::self());
     qmlRegisterSingletonInstance("org.kde.plasma.login", 0, 1, "BlurScreenBridge", new BlurScreenBridge);
+    qmlRegisterType<GreeterEventFilter>("org.kde.plasma.login", 0, 1, "GreeterEventFilter");
 
     LoginGreeter greeter;
     return app.exec();
