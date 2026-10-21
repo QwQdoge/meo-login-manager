@@ -16,11 +16,11 @@ Item {
     property bool active: true
     property date currentTime: new Date()
 
-    implicitWidth: clockText.implicitWidth
-    implicitHeight: clockText.implicitHeight + dateText.implicitHeight + Kirigami.Units.largeSpacing
+    implicitWidth: Math.max(clockText.implicitWidth, dateText.implicitWidth)
+    implicitHeight: glyphSize * 1.84 + dateText.implicitHeight + Kirigami.Units.largeSpacing
     opacity: active ? 1 : 0
     Accessible.role: Accessible.StaticText
-    Accessible.name: i18nd("plasma_login", "Current time: %1, %2", clockText.text, dateText.text)
+    Accessible.name: i18nd("plasma_login", "Current time: %1, %2", Qt.formatTime(root.currentTime, Qt.locale(), Locale.ShortFormat), dateText.text)
 
     MeoGreeterTheme {
         id: meoTheme
@@ -32,28 +32,50 @@ Item {
         }
     }
 
+    readonly property real glyphSize: Math.max(Kirigami.Units.gridUnit * 6,
+                                               (root.parent ? root.parent.height : 900) * 0.2)
+
     Column {
         anchors.centerIn: parent
         spacing: Kirigami.Units.smallSpacing
 
-        Text {
-            id: clockText
+        // Hours stacked above minutes, light and large, with a small date
+        // line beneath (Googlebook-style lock/login clock).
+        Column {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: Qt.formatTime(root.currentTime, Qt.locale(), Locale.ShortFormat)
-            font.family: meoTheme.brandFont
-            font.pixelSize: Kirigami.Units.gridUnit * 9
-            font.weight: Font.Bold
-            color: meoTheme.onSurface
+            spacing: -root.glyphSize * 0.16
+
+            Text {
+                id: clockText
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: Qt.formatTime(root.currentTime, Qt.locale().timeFormat(Locale.ShortFormat).indexOf("AP") >= 0
+                                    || Qt.locale().timeFormat(Locale.ShortFormat).indexOf("ap") >= 0 ? "h" : "HH")
+                font.family: meoTheme.plainFont
+                font.pixelSize: root.glyphSize
+                font.weight: Font.Light
+                font.letterSpacing: -root.glyphSize * 0.02
+                color: meoTheme.onSurface
+            }
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: Qt.formatTime(root.currentTime, "mm")
+                font.family: meoTheme.plainFont
+                font.pixelSize: root.glyphSize
+                font.weight: Font.Light
+                font.letterSpacing: -root.glyphSize * 0.02
+                color: meoTheme.onSurface
+            }
         }
 
         Text {
             id: dateText
             anchors.horizontalCenter: parent.horizontalCenter
-            text: Qt.formatDate(root.currentTime, Qt.locale(), Locale.LongFormat)
+            text: Qt.locale().toString(root.currentTime, "ddd, MMM d")
             font.family: meoTheme.plainFont
-            font.pointSize: Kirigami.Theme.defaultFont.pointSize + 3
+            font.pointSize: Kirigami.Theme.defaultFont.pointSize + 2
             font.weight: Font.Medium
-            color: meoTheme.onSurfaceVariant
+            color: meoTheme.onSurface
         }
     }
 
