@@ -103,44 +103,6 @@ Item {
         onPressed: PlasmaLogin.GreeterState.activateWindow(Window.window);
         onPositionChanged: PlasmaLogin.GreeterState.activateWindow(Window.window);
 
-        // This is intentionally a wallpaper-safe presentation overlay. The
-        // active KDE/Meo color scheme supplies the semantic roles; no private
-        // wallpaper path, user session service, or ad-hoc palette is read.
-        Rectangle {
-            anchors.fill: parent
-            z: -2
-            color: Kirigami.Theme.backgroundColor
-            opacity: loginScreenRoot.uiVisible ? 0.18 : 0.08
-
-            Behavior on opacity {
-                OpacityAnimator { duration: 250 }
-            }
-        }
-
-        // Static, low-contrast forms give the wallpaper a Caelestia-like
-        // spatial layer without turning the greeter into an animation engine.
-        Rectangle {
-            z: -1
-            width: Math.max(420, parent.width * 0.48)
-            height: width
-            radius: width / 2
-            x: parent.width - width * 0.56
-            y: -height * 0.62
-            color: Kirigami.Theme.highlightColor
-            opacity: 0.12
-        }
-
-        Rectangle {
-            z: -1
-            width: Math.max(360, parent.width * 0.38)
-            height: width
-            radius: width / 2
-            x: -width * 0.62
-            y: parent.height - height * 0.42
-            color: Kirigami.Theme.negativeTextColor
-            opacity: 0.08
-        }
-
         DropShadow {
             id: clockShadow
             anchors.fill: clock
@@ -151,7 +113,7 @@ Item {
             samples: 15
             spread: 0.2
             color: Qt.rgba(0, 0, 0, 0.7)
-            opacity: loginScreenRoot.uiVisible ? 0 : 1
+            opacity: 1
             Behavior on opacity {
                 OpacityAnimator {
                     duration: Kirigami.Units.veryLongDuration * 2
@@ -163,11 +125,56 @@ Item {
         MeoGreeterClock {
             id: clock
             shadow: clockShadow
-            visible: y > 0 && Settings.showClock
-            active: loginScreenRoot.uiVisible
+            visible: Settings.showClock
+            active: true
             anchors.horizontalCenter: parent.horizontalCenter
-            y: (userListComponent.userList.y + mainStack.y)/2 - height/2
-            Layout.alignment: Qt.AlignBaseline
+            // Ambient: clock sits in the upper-middle of the wallpaper.
+            // Credentials revealed: it lifts slightly to make room for the
+            // sign-in area at the bottom, as on the lock screen.
+            y: parent.height * (loginScreenRoot.uiVisible ? 0.12 : 0.22)
+
+            Behavior on y {
+                NumberAnimation {
+                    duration: 500
+                    easing.type: Easing.OutCubic
+                }
+            }
+        }
+
+        // Ambient hint: lock glyph and a single line, hidden once the
+        // credential area is revealed.
+        Column {
+            id: ambientHint
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: Math.max(Kirigami.Units.gridUnit * 2, parent.height * 0.045)
+            spacing: Kirigami.Units.largeSpacing
+            opacity: loginScreenRoot.uiVisible ? 0 : 1
+            visible: opacity > 0.001
+
+            Behavior on opacity {
+                OpacityAnimator {
+                    duration: Kirigami.Units.longDuration
+                }
+            }
+
+            Kirigami.Icon {
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: Kirigami.Units.iconSizes.medium
+                height: width
+                source: "system-lock-screen"
+                color: "white"
+            }
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: i18nd("plasma_login", "Press any key or click to sign in")
+                color: "white"
+                font.pointSize: Kirigami.Theme.defaultFont.pointSize
+                font.weight: Font.Medium
+                style: Text.Outline
+                styleColor: Qt.rgba(0, 0, 0, 0.35)
+            }
         }
 
         QQC2.StackView {
@@ -175,7 +182,11 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
 
-            height: root.height + Kirigami.Units.gridUnit * 3
+            // Sign-in area lives in the lower part of the screen; the
+            // session screen centres its avatar and password row inside it.
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: Kirigami.Units.gridUnit * 3
+            height: Math.min(root.height * 0.46, Kirigami.Units.gridUnit * 26)
 
             hoverEnabled: true
 
@@ -422,6 +433,9 @@ Item {
             anchors.margins: Kirigami.Units.smallSpacing
 
             spacing: Kirigami.Units.smallSpacing
+
+            opacity: loginScreenRoot.uiVisible ? 1 : 0
+            visible: opacity > 0.001
 
             Behavior on opacity {
                 OpacityAnimator {

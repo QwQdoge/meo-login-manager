@@ -54,7 +54,7 @@ Item {
                 font.pixelSize: root.glyphSize
                 font.weight: Font.Light
                 font.letterSpacing: -root.glyphSize * 0.02
-                color: meoTheme.onSurface
+                color: "white"
             }
 
             Text {
@@ -64,7 +64,7 @@ Item {
                 font.pixelSize: root.glyphSize
                 font.weight: Font.Light
                 font.letterSpacing: -root.glyphSize * 0.02
-                color: meoTheme.onSurface
+                color: "white"
             }
         }
 
@@ -75,7 +75,7 @@ Item {
             font.family: meoTheme.plainFont
             font.pointSize: Kirigami.Theme.defaultFont.pointSize + 2
             font.weight: Font.Medium
-            color: meoTheme.onSurface
+            color: "white"
         }
     }
 

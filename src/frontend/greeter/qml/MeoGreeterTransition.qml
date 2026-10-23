@@ -2,6 +2,11 @@
  * SPDX-FileCopyrightText: 2026 MeoArch contributors
  *
  * SPDX-License-Identifier: LGPL-2.0-or-later
+ *
+ * Presentation-only backdrop for the greeter. It mirrors the lock screen: the
+ * wallpaper stays prominent while ambient, a soft scrim deepens when the
+ * credential area is revealed, and a short unlock glyph plays once the
+ * authenticator reports success. It never triggers or infers authentication.
  */
 
 import QtQuick
@@ -13,12 +18,6 @@ Item {
     property bool expanded: false
     property bool succeeded: false
 
-    readonly property real collapsedSize: Math.max(112, Math.min(width, height) * 0.14)
-    readonly property real expandedWidth: Math.min(width * 0.74, 980)
-    readonly property real expandedHeight: Math.min(height * 0.72, 720)
-    readonly property real collapsedRadius: collapsedSize / 4
-    readonly property real expandedRadius: Math.max(36, Kirigami.Units.gridUnit * 2.4)
-
     state: succeeded ? "success" : (expanded ? "expanded" : "collapsed")
 
     MeoGreeterTheme {
@@ -29,32 +28,18 @@ Item {
         id: scrim
         anchors.fill: parent
         color: meoTheme.scrim
-        opacity: 0.10
+        opacity: 0.06
     }
 
-    Rectangle {
-        id: surface
+    Kirigami.Icon {
+        id: unlockIcon
         anchors.centerIn: parent
-        width: root.collapsedSize
-        height: root.collapsedSize
-        radius: root.collapsedRadius
-        rotation: 180
-        scale: 0.94
-        opacity: 0.94
-        color: meoTheme.surfaceContainerHigh
-        border.width: 1
-        border.color: meoTheme.outlineVariant
-
-        Kirigami.Icon {
-            id: lockIcon
-            anchors.centerIn: parent
-            width: Math.min(parent.width, parent.height) * 0.42
-            height: width
-            source: "system-lock-screen"
-            color: meoTheme.onSurface
-            opacity: 1
-            rotation: -surface.rotation
-        }
+        width: Math.max(Kirigami.Units.iconSizes.enormous, Math.min(root.width, root.height) * 0.12)
+        height: width
+        source: "object-unlocked"
+        color: meoTheme.success
+        opacity: 0
+        scale: 0.8
     }
 
     states: [
@@ -62,69 +47,36 @@ Item {
             name: "collapsed"
             PropertyChanges {
                 target: scrim
-                opacity: 0.10
+                opacity: 0.06
             }
             PropertyChanges {
-                target: surface
-                width: root.collapsedSize
-                height: root.collapsedSize
-                radius: root.collapsedRadius
-                rotation: 180
-                scale: 0.94
-                opacity: 0.94
-                color: meoTheme.surfaceContainerHigh
-            }
-            PropertyChanges {
-                target: lockIcon
-                source: "system-lock-screen"
-                color: meoTheme.onSurface
-                opacity: 1
+                target: unlockIcon
+                opacity: 0
+                scale: 0.8
             }
         },
         State {
             name: "expanded"
             PropertyChanges {
                 target: scrim
-                opacity: 0.22
+                opacity: 0.38
             }
             PropertyChanges {
-                target: surface
-                width: root.expandedWidth
-                height: root.expandedHeight
-                radius: root.expandedRadius
-                rotation: 360
-                scale: 1
-                opacity: 0.82
-                color: meoTheme.surfaceContainer
-            }
-            PropertyChanges {
-                target: lockIcon
-                source: "system-lock-screen"
-                color: meoTheme.primary
+                target: unlockIcon
                 opacity: 0
+                scale: 0.8
             }
         },
         State {
             name: "success"
             PropertyChanges {
                 target: scrim
-                opacity: 0
+                opacity: 0.38
             }
             PropertyChanges {
-                target: surface
-                width: root.collapsedSize
-                height: root.collapsedSize
-                radius: root.collapsedRadius
-                rotation: 540
-                scale: 0.88
-                opacity: 0
-                color: meoTheme.successContainer
-            }
-            PropertyChanges {
-                target: lockIcon
-                source: "object-unlocked"
-                color: meoTheme.success
+                target: unlockIcon
                 opacity: 1
+                scale: 1
             }
         }
     ]
@@ -134,121 +86,43 @@ Item {
             from: "collapsed"
             to: "expanded"
 
-            ParallelAnimation {
-                NumberAnimation {
-                    target: surface
-                    properties: "width,height,radius,rotation,scale"
-                    duration: meoTheme.durationSpatial
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: meoTheme.easingEmphasizedDecelerate
-                }
-                NumberAnimation {
-                    target: surface
-                    property: "opacity"
-                    duration: meoTheme.durationDefault
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: meoTheme.easingStandardDecelerate
-                }
-                ColorAnimation {
-                    target: surface
-                    property: "color"
-                    duration: meoTheme.durationDefault
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: meoTheme.easingStandardDecelerate
-                }
-                ColorAnimation {
-                    target: lockIcon
-                    property: "color"
-                    duration: meoTheme.durationDefault
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: meoTheme.easingStandardDecelerate
-                }
+            NumberAnimation {
+                target: scrim
+                property: "opacity"
+                duration: meoTheme.durationSpatial
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: meoTheme.easingEmphasizedDecelerate
             }
         },
         Transition {
             from: "expanded"
             to: "collapsed"
 
-            ParallelAnimation {
-                NumberAnimation {
-                    target: surface
-                    properties: "width,height,radius,rotation,scale"
-                    duration: meoTheme.durationExit
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: meoTheme.easingEmphasized
-                }
-                NumberAnimation {
-                    target: surface
-                    property: "opacity"
-                    duration: meoTheme.durationDefault
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: meoTheme.easingStandard
-                }
-                ColorAnimation {
-                    target: surface
-                    property: "color"
-                    duration: meoTheme.durationDefault
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: meoTheme.easingStandard
-                }
-                ColorAnimation {
-                    target: lockIcon
-                    property: "color"
-                    duration: meoTheme.durationDefault
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: meoTheme.easingStandard
-                }
+            NumberAnimation {
+                target: scrim
+                property: "opacity"
+                duration: meoTheme.durationExit
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: meoTheme.easingStandard
             }
         },
         Transition {
             to: "success"
 
-            SequentialAnimation {
-                ParallelAnimation {
-                    NumberAnimation {
-                        target: surface
-                        properties: "width,height,radius,rotation,scale"
-                        duration: meoTheme.durationExit
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: meoTheme.easingEmphasized
-                    }
-                    ColorAnimation {
-                        target: surface
-                        property: "color"
-                        duration: meoTheme.durationFast
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: meoTheme.easingStandardDecelerate
-                    }
-                    ColorAnimation {
-                        target: lockIcon
-                        property: "color"
-                        duration: meoTheme.durationFast
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: meoTheme.easingStandardDecelerate
-                    }
-                    NumberAnimation {
-                        target: lockIcon
-                        property: "opacity"
-                        duration: meoTheme.durationFast
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: meoTheme.easingStandardDecelerate
-                    }
+            ParallelAnimation {
+                NumberAnimation {
+                    target: unlockIcon
+                    property: "scale"
+                    duration: meoTheme.durationExit
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: meoTheme.easingEmphasized
                 }
-                ParallelAnimation {
-                    NumberAnimation {
-                        target: surface
-                        property: "opacity"
-                        duration: meoTheme.durationFast
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: meoTheme.easingStandardAccelerate
-                    }
-                    NumberAnimation {
-                        target: scrim
-                        property: "opacity"
-                        duration: meoTheme.durationFast
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: meoTheme.easingStandardAccelerate
-                    }
+                NumberAnimation {
+                    target: unlockIcon
+                    property: "opacity"
+                    duration: meoTheme.durationFast
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: meoTheme.easingStandardDecelerate
                 }
             }
         }
