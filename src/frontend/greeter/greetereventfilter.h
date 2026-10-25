@@ -4,9 +4,7 @@
  *  SPDX-License-Identifier: LGPL-2.0-or-later
  */
 
-#include <QPointer>
 #include <QQuickWindow>
-#include <qqmlregistration.h>
 
 class GreeterEventFilter : public QObject
 {
@@ -16,11 +14,13 @@ class GreeterEventFilter : public QObject
 
 public:
     explicit GreeterEventFilter(QObject *parent = nullptr);
+
     QQuickWindow *window() const;
     void setWindow(QQuickWindow *window);
 
 Q_SIGNALS:
     void windowChanged();
+
     void keyPressed();
     void escapeKeyPressed();
 
@@ -28,5 +28,5 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
-    QPointer<QQuickWindow> m_window;
+    QPointer<QQuickWindow> m_window = nullptr;
 };

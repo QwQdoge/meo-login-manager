@@ -31,9 +31,11 @@ int main(int argc, char **argv)
     QCoreApplication app(argc, argv);
     auto sig = KSignalHandler::self();
     sig->watchSignal(SIGTERM);
+    // systemd follows SIGTERM with SIGHUP when it stops the session scope
+    sig->watchSignal(SIGHUP);
     QObject::connect(sig, &KSignalHandler::signalReceived, &app, [](int s) {
-        if (s == SIGTERM) {
-            QCoreApplication::instance()->exit(-1);
+        if (s == SIGTERM || s == SIGHUP) {
+            QCoreApplication::instance()->exit(0);
         }
     });
 
@@ -59,7 +61,7 @@ int main(int argc, char **argv)
         process->setArguments(args);
         process->setProcessEnvironment(helper.sessionEnvironment());
         process->start();
-        QObject::connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), &app, &QCoreApplication::quit);
+        QObject::connect(process, &QProcess::finished, &app, &QCoreApplication::quit);
     });
 
     helper.start();

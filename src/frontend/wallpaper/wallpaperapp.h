@@ -10,12 +10,10 @@
 
 #include <QGuiApplication>
 #include <QObject>
+#include <QQmlEngine>
 #include <QString>
-#include <memory>
 
 #include <KPackage/PackageStructure>
-
-class QQmlEngine;
 
 class WallpaperWindow;
 
@@ -36,6 +34,6 @@ private:
     void setupWallpaperPlugin(WallpaperWindow *window);
 
     KPackage::Package m_wallpaperPackage;
-    std::shared_ptr<QQmlEngine> m_engine;
     QList<WallpaperWindow *> m_windows;
+    std::shared_ptr<QQmlEngine> m_engine;
 };

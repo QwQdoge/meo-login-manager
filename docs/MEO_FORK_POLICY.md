@@ -2,11 +2,13 @@
 
 ## Baseline and purpose
 
-`meo/6.7` starts at upstream Plasma Login Manager `v6.7.5`
-(`e63894e7923db053413915ea582db2757303ca8f`).  The `upstream` remote remains
-the only upstream source.  This repository changes presentation and Meo-owned
-configuration integration; it does not become a replacement authentication or
-session-management stack.
+`main` is Meo's only working line.  It carries the Meo patch set on top of
+upstream Plasma Login Manager `v6.8.1`
+(`704d85fc15b818e07bce39066f45e629e2116565`), which was merged into the
+previous `v6.7.5` line (`e63894e7923db053413915ea582db2757303ca8f`).  The
+`upstream` remote remains the only upstream source.  This repository changes
+presentation and Meo-owned configuration integration; it does not become a
+replacement authentication or session-management stack.
 
 The branch must continue to build the upstream service identity
 `plasmalogin`, use its PAM configuration and preserve the existing display
@@ -33,28 +35,23 @@ of them needs a separately reviewed upstream patch, a rationale, and a new
 baseline decision before it can enter this fork.
 
 `ctest -R meo-fork-boundary --output-on-failure` enforces the documented
-surface against `v6.7.5` in a Git checkout.  It always checks that this policy
+surface against `v6.8.1` in a Git checkout.  It always checks that this policy
 and the session-entry contract are present; source archives skip only the
 Git-diff portion.
 
 ## Upstream synchronization
 
-### Plasma 6.8 rendering compatibility
+### Plasma 6.8 port
 
-The authentication/session baseline remains `v6.7.5`. The rendering layer
-backports upstream `562becde093b901417066cbedb1d724110dfe44e`
-(QQuickView/globalEngine) and `ac2049aca3e14c0789ff0a3497c337b0c239e8e8`
-(per-window greeter event filter) for PlasmaQuick 6.8. Meo keeps its existing
-greeter source URL, layout, Layer Shell scope and window lifecycle; no protected
-authentication, PAM, daemon, service or session-start files change.
+The 6.7-era rendering backports (QQuickView/globalEngine, per-window greeter
+event filter, wallpaper window engine) are now upstream in `v6.8.1`; the
+wallpaper sources and `greetereventfilter.*` are byte-identical to upstream and
+the hash pin file for them was removed.  Taking `v6.8.1` also replaces the
+protected paths with upstream's (daemon, auth, helper, common, startkde,
+services, PAM data) unchanged.  The greeter footer is upstream's
+`LoginLockScreen.Footer`; Meo only fades it with the credential area.
 
-The wallpaper window uses the same engine API backport, without importing
-upstream's unrelated output-adoption restructuring. These five rendering-only
-wallpaper files are the sole additional reviewed surface; their exact content
-is pinned in `tests/plasma68-wallpaper.sha256` and checked by the boundary test.
-Other wallpaper files and all existing protected paths remain forbidden.
-
-1. Fetch `upstream`, choose a released `v6.7.x` tag, and record its full
+1. Fetch `upstream`, choose a released upstream tag, and record its full
    commit before changing this branch.
 2. Review upstream changes to every protected path first.  Take authentication,
    PAM, daemon, D-Bus, service and session-start fixes intact; do not manually

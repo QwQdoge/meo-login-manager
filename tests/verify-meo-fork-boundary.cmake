@@ -16,7 +16,7 @@ endforeach()
 file(READ "${policy}" policy_contents)
 file(READ "${contract}" contract_contents)
 foreach(required_text IN ITEMS
-        "v6.7.5"
+        "v6.8.1"
         "src/auth/"
         "src/daemon/"
         "data/pam/"
@@ -41,8 +41,7 @@ foreach(required_text IN ITEMS
         "MeoGreeterClock"
         "GreeterState"
         "SessionManagement"
-        "KeyboardButton"
-        "SessionButton"
+        "LoginLockScreen.Footer"
         "Kirigami.Theme")
     string(FIND "${greeter_main_contents}${greeter_clock_contents}" "${required_text}" found_at)
     if(found_at EQUAL -1)
@@ -98,39 +97,6 @@ foreach(required_text IN ITEMS
     endif()
 endforeach()
 
-cmake_policy(SET CMP0057 NEW)
-set(reviewed_wallpaper_paths
-    src/frontend/wallpaper/CMakeLists.txt
-    src/frontend/wallpaper/wallpaperapp.cpp
-    src/frontend/wallpaper/wallpaperapp.h
-    src/frontend/wallpaper/wallpaperwindow.cpp
-    src/frontend/wallpaper/wallpaperwindow.h
-)
-set(upstream_compatibility_paths)
-file(STRINGS "${PROJECT_SOURCE_DIR}/tests/plasma68-wallpaper.sha256" compatibility_hashes)
-foreach(entry IN LISTS compatibility_hashes)
-    if(NOT entry MATCHES "^([0-9a-f]+)  (src/frontend/wallpaper/[A-Za-z.]+)$")
-        message(FATAL_ERROR "invalid reviewed wallpaper compatibility hash: ${entry}")
-    endif()
-    set(expected_hash "${CMAKE_MATCH_1}")
-    set(compatibility_path "${CMAKE_MATCH_2}")
-    string(LENGTH "${expected_hash}" hash_length)
-    if(NOT hash_length EQUAL 64 OR NOT compatibility_path IN_LIST reviewed_wallpaper_paths
-            OR compatibility_path IN_LIST upstream_compatibility_paths)
-        message(FATAL_ERROR "wallpaper compatibility entry is outside the exact reviewed set: ${entry}")
-    endif()
-    file(SHA256 "${PROJECT_SOURCE_DIR}/${compatibility_path}" actual_hash)
-    if(NOT actual_hash STREQUAL expected_hash)
-        message(FATAL_ERROR "wallpaper compatibility file differs from reviewed backport: ${compatibility_path}")
-    endif()
-    list(APPEND upstream_compatibility_paths "${compatibility_path}")
-endforeach()
-
-list(LENGTH upstream_compatibility_paths compatibility_count)
-if(NOT compatibility_count EQUAL 5)
-    message(FATAL_ERROR "all five reviewed wallpaper compatibility files must be pinned")
-endif()
-
 # An exported source archive has no Git metadata.  Documentation still gets
 # checked above; changed-path enforcement runs whenever this is a Git checkout.
 if(NOT EXISTS "${PROJECT_SOURCE_DIR}/.git")
@@ -149,12 +115,12 @@ execute_process(
     ERROR_QUIET
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-set(pinned_v675 "e63894e7923db053413915ea582db2757303ca8f")
+set(pinned_v681 "704d85fc15b818e07bce39066f45e629e2116565")
 if(NOT base_result EQUAL 0)
     # Source mirrors may retain the pinned upstream commit without its tag.
-    # Resolve only the documented v6.7.5 object; never guess a merge base.
-    if(UPSTREAM_BASE STREQUAL "v6.7.5")
-        set(base_commit "${pinned_v675}")
+    # Resolve only the documented v6.8.1 object; never guess a merge base.
+    if(UPSTREAM_BASE STREQUAL "v6.8.1")
+        set(base_commit "${pinned_v681}")
         execute_process(
             COMMAND "${GIT_EXECUTABLE}" -C "${PROJECT_SOURCE_DIR}" cat-file -e "${base_commit}^{commit}"
             RESULT_VARIABLE base_result
@@ -165,7 +131,7 @@ if(NOT base_result EQUAL 0)
         message(FATAL_ERROR "upstream base ${UPSTREAM_BASE} is unavailable")
     endif()
 endif()
-if(UPSTREAM_BASE STREQUAL "v6.7.5" AND NOT base_commit STREQUAL pinned_v675)
+if(UPSTREAM_BASE STREQUAL "v6.8.1" AND NOT base_commit STREQUAL pinned_v681)
     message(FATAL_ERROR "upstream base ${UPSTREAM_BASE} does not match the pinned commit")
 endif()
 
@@ -250,9 +216,6 @@ foreach(path IN LISTS changed_paths)
     endforeach()
 
     set(is_allowed FALSE)
-    if(path IN_LIST upstream_compatibility_paths)
-        set(is_allowed TRUE)
-    endif()
     foreach(allowed IN LISTS allowed_paths)
         if(path STREQUAL "${allowed}")
             set(is_allowed TRUE)

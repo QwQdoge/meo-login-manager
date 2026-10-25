@@ -359,6 +359,11 @@ SessionModel *PlasmaLoginKcm::sessionModel() const
     return &sessionModel;
 }
 
+QString PlasmaLoginKcm::currentUser() const
+{
+    return KUser().loginName();
+}
+
 bool PlasmaLoginKcm::KDEWalletAvailable()
 {
     return !QStandardPaths::findExecutable(QLatin1String("kwalletmanager5")).isEmpty();
@@ -366,7 +371,7 @@ bool PlasmaLoginKcm::KDEWalletAvailable()
 
 void PlasmaLoginKcm::openKDEWallet()
 {
-    KService::Ptr kwalletmanagerService = KService::serviceByDesktopName(QStringLiteral("org.kde.kwalletmanager5"));
+    KService::Ptr kwalletmanagerService = KService::serviceByDesktopName(QStringLiteral("org.kde.kwalletmanager"));
     auto *job = new KIO::ApplicationLauncherJob(kwalletmanagerService);
     job->start();
 }

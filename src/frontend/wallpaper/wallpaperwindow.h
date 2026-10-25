@@ -16,7 +16,7 @@ class WallpaperWindow : public QQuickView
     Q_PROPERTY(bool blur READ blur NOTIFY blurChanged)
 
 public:
-    explicit WallpaperWindow(QQmlEngine *engine);
+    WallpaperWindow(QQmlEngine *engine);
     bool blur() const;
     void setBlur(bool enable);
 

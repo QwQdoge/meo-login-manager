@@ -18,7 +18,6 @@
 #include <KConfigPropertyMap>
 #include <KLocalizedQmlContext>
 #include <KPackage/PackageLoader>
-#include <KWindowSystem>
 #include <LayerShellQt/Window>
 #include <PlasmaQuick/PlasmaQuick>
 
@@ -32,7 +31,10 @@ WallpaperApp::WallpaperApp(int &argc, char **argv)
     : QGuiApplication(argc, argv)
     , m_engine(PlasmaQuick::globalEngine())
 {
+    setQuitOnLastWindowClosed(false);
+
     KLocalization::setupLocalizedContext(m_engine.get());
+
     m_wallpaperPackage = KPackage::PackageLoader::self()->loadPackage(QStringLiteral("Plasma/Wallpaper"));
     m_wallpaperPackage.setPath(PlasmaLoginSettings::getInstance().wallpaperPluginId());
 
@@ -52,6 +54,10 @@ WallpaperApp::WallpaperApp(int &argc, char **argv)
 
 void WallpaperApp::createWindowForScreen(QScreen *screen)
 {
+    if (screen->geometry().isNull()) {
+        return;
+    }
+
     WallpaperWindow *window = new WallpaperWindow(m_engine.get());
     window->QObject::setParent(this);
     window->setScreen(screen);
@@ -65,26 +71,15 @@ void WallpaperApp::createWindowForScreen(QScreen *screen)
 
     window->setGeometry(screen->geometry());
 
-    if (KWindowSystem::isPlatformWayland()) {
-        if (auto layerShellWindow = LayerShellQt::Window::get(window)) {
-            layerShellWindow->setScope(QStringLiteral("plasma-login-wallpaper"));
-            layerShellWindow->setLayer(LayerShellQt::Window::LayerBackground);
-            layerShellWindow->setExclusiveZone(-1);
-            layerShellWindow->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityNone);
-            layerShellWindow->setScreen(screen);
-        }
+    if (auto layerShellWindow = LayerShellQt::Window::get(window)) {
+        layerShellWindow->setScope(QStringLiteral("plasma-login-wallpaper"));
+        layerShellWindow->setLayer(LayerShellQt::Window::LayerBackground);
+        layerShellWindow->setExclusiveZone(-1);
+        layerShellWindow->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityNone);
+        layerShellWindow->setScreen(screen);
     }
 
     window->setResizeMode(QQuickView::SizeRootObjectToView);
-
-    if (KWindowSystem::isPlatformX11()) {
-        // X11 specific hint only on X11
-        window->setFlags(Qt::BypassWindowManagerHint);
-    } else if (!KWindowSystem::isPlatformWayland()) {
-        // on other platforms go fullscreen
-        // on Wayland we cannot go fullscreen due to QTBUG 54883
-        window->setWindowState(Qt::WindowFullScreen);
-    }
 
     setupWallpaperPlugin(window);
     window->show();

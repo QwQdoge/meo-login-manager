@@ -12,8 +12,9 @@ import Qt5Compat.GraphicalEffects
 
 import org.kde.kirigami as Kirigami
 import org.kde.breeze.components as BreezeComponents
-import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.private.keyboardindicator as KeyboardIndicator
+import org.kde.plasma.workspace.keyboardlayout as Keyboards
+import org.kde.plasma.workspace.loginlockscreen as LoginLockScreen
 
 import org.kde.plasma.login as PlasmaLogin
 
@@ -81,11 +82,9 @@ Item {
 
         onEscapeKeyPressed: {
             PlasmaLogin.GreeterState.timeoutWindow(loginScreenRoot.Window.window);
-            /*
--            if (inputPanel.keyboardActive) {
--                inputPanel.showHide();
--            }
--            */
+            if (Keyboards.KWinVirtualKeyboard.visible) {
+                Keyboards.KWinVirtualKeyboard.active = false;
+            }
             PlasmaLogin.GreeterState.clearPasswords();
         }
     }
@@ -286,7 +285,7 @@ Item {
                         visible: !userListComponent.showUsernamePrompt
                     }]
 
-                onLoginRequest: (username, password) => root.handleLoginRequest(username, password, sessionButton.currentSessionType, sessionButton.currentSessionFileName)
+                onLoginRequest: (username, password) => root.handleLoginRequest(username, password)
             }
 
             readonly property real zoomFactor: 1.5
@@ -384,7 +383,7 @@ Item {
                     }
                 }
 
-                onLoginRequest: (username, password) => root.handleLoginRequest(username, password, sessionButton.currentSessionType, sessionButton.currentSessionFileName)
+                onLoginRequest: (username, password) => root.handleLoginRequest(username, password)
 
                 //actionItemsVisible: !inputPanel.keyboardActive
                 actionItems: [
@@ -425,14 +424,8 @@ Item {
             }
         }
 
-        RowLayout {
+        LoginLockScreen.Footer {
             id: footer
-            anchors.bottom: parent.bottom
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.margins: Kirigami.Units.smallSpacing
-
-            spacing: Kirigami.Units.smallSpacing
 
             opacity: loginScreenRoot.uiVisible ? 1 : 0
             visible: opacity > 0.001
@@ -443,58 +436,33 @@ Item {
                 }
             }
 
-            /* Virtual keyboard btn */
-
-            KeyboardButton {
-                id: keyboardButton
+            onOskActivated: {
+                userListComponent.mainPasswordBox.forceActiveFocus();
             }
-
-            SessionButton {
-                id: sessionButton
-
-                onSessionChanged: {
-                    // NOTE: This won't work for userPromptComponent: we might
-                    // want a function to focus the correct password box, but
-                    // userPromptComponent has both that and the user box
-                    // Perhaps we need to store which one last had focus
-
-                    // Otherwise the password field loses focus and virtual keyboard
-                    // keystrokes get eaten
-                    userListComponent.mainPasswordBox.forceActiveFocus();
-                }
-
-                Layout.fillHeight: true
-                containmentMask: Item {
-                    parent: sessionButton
-                    anchors.fill: parent
-                    /*
-                    anchors.leftMargin: virtualKeyboardButton.visible || keyboardButton.visible
-                        ? 0 : -footer.anchors.margins
-                    */
-                    anchors.leftMargin: 0
-                    anchors.bottomMargin: -footer.anchors.margins
-                }
-            }
-
-            Item {
-                Layout.fillWidth: true
-            }
-
-            BreezeComponents.Battery {}
         }
     }
 
-    function handleLoginRequest(username, password, sessionType, sessionFileName) {
+    function handleLoginRequest(username, password) {
         root.notificationMessage = "";
         // GreeterState handles updating stateconfig with user/session of successful login
-        PlasmaLogin.GreeterState.handleLoginRequest(username, password, sessionType, sessionFileName);
+        PlasmaLogin.GreeterState.handleLoginRequest(username, password);
     }
 
     Connections {
         target: PlasmaLogin.Authenticator
 
+        // e.g. pam_u2f's "cue" asking the user to touch their key. Not auto-cleared
+        // like "Login Failed" is: handleLoginRequest() clears it on the next attempt.
+        function onInformationMessage(message) {
+            // A reset pending from an earlier failure would clear this one early.
+            notificationResetTimer.stop();
+            notificationMessage = message;
+        }
+
         function onLoginFailed() {
             notificationMessage = i18nd("plasma_login", "Login Failed");
+            // Only failures time out; started here rather than on every change.
+            notificationResetTimer.start();
 
             footer.enabled = true;
             mainStack.enabled = true;
@@ -506,12 +474,6 @@ Item {
         function onLoginSucceeded() {
             mainStack.opacity = 0;
             footer.opacity = 0;
-        }
-    }
-
-    onNotificationMessageChanged: {
-        if (notificationMessage) {
-            notificationResetTimer.start();
         }
     }
 

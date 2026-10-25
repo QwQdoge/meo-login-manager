@@ -155,6 +155,10 @@ SessionManagementScreen {
         }
     }
 
+    SessionButton {
+        Layout.fillWidth: true
+    }
+
     // Synchronise state
     Item {
         id: sync

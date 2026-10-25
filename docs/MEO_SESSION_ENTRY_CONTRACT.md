@@ -41,7 +41,7 @@ credential field before returning to `ambient` or `collecting`. Failure never
 reveals the previous contents or changes the selected identity without a real
 backend state change.
 
-At the `v6.7.5` Plasma Login Manager baseline, the greeter exposes its shared
+At the `v6.8.1` Plasma Login Manager baseline, the greeter exposes its shared
 state through `GreeterState` (`userListPassword` and `userPromptPassword`). It
 does not expose a PasswordSync symbol or a public PasswordSync contract.
 Therefore Meo must not create a second password model: the existing

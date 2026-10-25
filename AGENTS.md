@@ -3,7 +3,7 @@
 ## Scope and fork boundary
 
 This repository is the MeoArch-maintained Plasma Login thin fork. Keep Meo-specific changes narrow so upstream rebases remain reviewable.
-The shared workspace rules in `../AGENTS.md` apply here. The fork baseline is pinned to `v6.7.5`; read `docs/MEO_FORK_POLICY.md` and `docs/MEO_SESSION_ENTRY_CONTRACT.md` before edits.
+The shared workspace rules in `../AGENTS.md` apply here. The fork baseline is pinned to `v6.8.1`; read `docs/MEO_FORK_POLICY.md` and `docs/MEO_SESSION_ENTRY_CONTRACT.md` before edits.
 
 Keep greeter presentation in `src/frontend/greeter/`. Preserve upstream PAM, authentication, daemon, D-Bus, service, and session-start code unless a separately reviewed upstream security repair requires a change.
 

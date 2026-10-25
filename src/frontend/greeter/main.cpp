@@ -12,11 +12,10 @@
 #include <QQmlContext>
 #include <QQuickView>
 #include <QScreen>
-#include <memory>
+#include <QSurfaceFormat>
 
 #include <KLocalizedQmlContext>
 #include <KLocalizedString>
-#include <KWindowSystem>
 #include <LayerShellQt/Window>
 #include <PlasmaQuick/PlasmaQuick>
 #include <kworkspace6/sessionmanagement.h>
@@ -54,6 +53,10 @@ public:
 private:
     void createWindowForScreen(QScreen *screen)
     {
+        if (screen->geometry().isNull()) {
+            return;
+        }
+
         auto *window = new QQuickView(m_engine.get(), nullptr);
         window->QObject::setParent(this);
         window->setScreen(screen);
@@ -67,26 +70,15 @@ private:
 
         window->setGeometry(screen->geometry());
 
-        if (KWindowSystem::isPlatformWayland()) {
-            if (auto layerShellWindow = LayerShellQt::Window::get(window)) {
-                layerShellWindow->setScope(QStringLiteral("plasma-login-greeter"));
-                layerShellWindow->setLayer(LayerShellQt::Window::LayerTop);
-                layerShellWindow->setExclusiveZone(-1);
-                layerShellWindow->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityExclusive);
-                layerShellWindow->setScreen(screen);
-            }
+        if (auto layerShellWindow = LayerShellQt::Window::get(window)) {
+            layerShellWindow->setScope(QStringLiteral("plasma-login-greeter"));
+            layerShellWindow->setLayer(LayerShellQt::Window::LayerTop);
+            layerShellWindow->setExclusiveZone(-1);
+            layerShellWindow->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityExclusive);
+            layerShellWindow->setScreen(screen);
         }
 
         window->setResizeMode(QQuickView::SizeRootObjectToView);
-
-        if (KWindowSystem::isPlatformX11()) {
-            // X11 specific hint only on X11
-            window->setFlags(Qt::BypassWindowManagerHint);
-        } else if (!KWindowSystem::isPlatformWayland()) {
-            // on other platforms go fullscreen
-            // on Wayland we cannot go fullscreen due to QTBUG 54883
-            window->setWindowState(Qt::WindowFullScreen);
-        }
 
         // MeoMain is presentation-only and wraps the upstream-compatible Main
         // greeter. Authentication/session handling remains in the existing
@@ -127,8 +119,14 @@ int main(int argc, char *argv[])
     // Comfortaa in QML; ordinary Plasma/Kirigami controls inherit this font.
     app.setFont(QFont(QStringLiteral("Roboto")));
 
+    app.setQuitOnLastWindowClosed(false);
+
     parser.process(app);
     LoginGreeter::setTestModeEnabled(parser.isSet(QStringLiteral("test")));
+
+    auto format = QSurfaceFormat::defaultFormat();
+    format.setOption(QSurfaceFormat::ResetNotification);
+    QSurfaceFormat::setDefaultFormat(format);
 
     QQuickWindow::setDefaultAlphaBuffer(true);
     if (LoginGreeter::testModeEnabled()) {

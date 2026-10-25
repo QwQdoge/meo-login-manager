@@ -26,13 +26,17 @@ void GreeterEventFilter::setWindow(QQuickWindow *window)
     if (m_window == window) {
         return;
     }
+
     if (m_window) {
         m_window->removeEventFilter(this);
     }
+
     m_window = window;
+
     if (m_window) {
         m_window->installEventFilter(this);
     }
+
     Q_EMIT windowChanged();
 }
 

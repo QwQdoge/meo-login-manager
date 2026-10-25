@@ -4,6 +4,7 @@ on:
   pull_request:
   push:
     branches:
+      - main
       - meo/6.7
       - meo/session-entry-final-polish
       - feature/meo-login-greeter

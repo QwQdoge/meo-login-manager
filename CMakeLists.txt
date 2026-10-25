@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.22)
 
-set(PROJECT_VERSION "6.7.5")
+set(PROJECT_VERSION "6.8.1")
 
 project(PLASMALOGIN VERSION ${PROJECT_VERSION})
 
 # Meo keeps this fork intentionally narrow.  The contract test is source-only
 # and has no runtime dependency, so it can also run in a packaging checkout.
 include(CTest)
-set(MEO_FORK_REVIEW_BASE "v6.7.5" CACHE STRING
+set(MEO_FORK_REVIEW_BASE "v6.8.1" CACHE STRING
     "Git ref used to review Meo thin-fork changes; upstream provenance remains pinned in MEO_FORK_POLICY.md")
 if(BUILD_TESTING)
     add_test(
@@ -23,10 +23,10 @@ endif()
 option(INSTALL_PAM_CONFIGURATION "Install PAM configuration files" ON)
 
 # Version settings
-set(PROJECT_DEP_VERSION "6.7.0")
+set(PROJECT_DEP_VERSION "6.8.0")
 
-set(QT_MIN_VERSION "6.10.0")
-set(KF6_MIN_VERSION "6.26.0")
+set(QT_MIN_VERSION "6.11.0")
+set(KF6_MIN_VERSION "6.30.0")
 set(KDE_COMPILERSETTINGS_LEVEL "5.82")
 
 set(CMAKE_CXX_STANDARD 20)
@@ -54,7 +54,7 @@ include(ECMQmlModule)
 
 find_package(Qt6 CONFIG REQUIRED Core DBus Gui Qml Quick LinguistTools Test QuickTest ShaderTools)
 find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS Config Package WindowSystem I18n DBusAddons KCMUtils Auth KIO CoreAddons)
-find_package(PlasmaQuick 6.8 REQUIRED)
+find_package(PlasmaQuick ${PROJECT_DEP_VERSION} REQUIRED)
 find_package(LayerShellQt ${PROJECT_DEP_VERSION} REQUIRED)
 find_package(LibKWorkspace ${PROJECT_DEP_VERSION} REQUIRED)
 find_package(LibKLookAndFeel ${PROJECT_DEP_VERSION} REQUIRED)
@@ -114,6 +114,10 @@ endif()
 add_subdirectory(data)
 add_subdirectory(services)
 add_subdirectory(src)
+
+if (BUILD_TESTING)
+    add_subdirectory(autotests)
+endif()
 
 ki18n_install(po)
 
