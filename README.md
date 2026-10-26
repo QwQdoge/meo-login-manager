@@ -8,6 +8,18 @@ and session contracts remain upstream; see
 reviewed change surface. Local validation does not require replacing the host
 display manager.
 
+## 安装 / Install
+
+单独安装本组件（AUR）/ Install just this component from the AUR:
+
+```bash
+yay -Syu meo-plasma-login-manager
+```
+
+`meo-plasma-login-manager` replaces `plasma-login-manager` / 会替换 `plasma-login-manager`，安装前请确认。
+
+要一次装好全部 MeoArch 软件，请使用已签名的 Meo 软件源和 pacman，见[工作区说明](https://github.com/QwQdoge/MeoArch-os-workspace#install-meo-desktop-on-an-existing-arch-system)。To install the whole MeoArch software set, use the signed Meo repository with pacman; see the [workspace README](https://github.com/QwQdoge/MeoArch-os-workspace#install-meo-desktop-on-an-existing-arch-system).
+
 ## Compatibility boundary
 
 The public product name is **Meo Login**.
